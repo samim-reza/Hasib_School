@@ -4,6 +4,10 @@ from . import views
 app_name = 'academic'
 urlpatterns = [
     path('', views.home_view, name='home'),
+    path('logout/', views.account_logout, name='account_logout'),
+    path('super_admin/', views.super_admin_login, name='super_admin_login'),
+    path('super_admin/dashboard/', views.super_admin_dashboard, name='super_admin_dashboard'),
+    path('super_admin/logout/', views.super_admin_logout, name='super_admin_logout'),
     path('teacher/', views.teacher_portal, name='teacher_portal'),
     path('teacher/change-password/', views.teacher_change_password, name='teacher_change_password'),
     path('teacher/attendance-history/', views.attendance_history, name='attendance_history'),

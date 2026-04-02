@@ -29,10 +29,9 @@
 
         {% if is_admin %}
         <div class="mt-4 flex flex-wrap gap-2">
+            <a href="{% url 'academic:super_admin_dashboard' %}" class="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold hover:bg-white/25">সুপার অ্যাডমিন ড্যাশবোর্ড</a>
             <a href="{% url 'academic:teacher_management' %}" class="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold hover:bg-white/25">শিক্ষক ব্যবস্থাপনা</a>
             <a href="{% url 'academic:admin_account_settings' %}" class="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold hover:bg-white/25">অ্যাডমিন অ্যাকাউন্ট</a>
-            <a href="/admin/core/notice/" class="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold hover:bg-white/25">নোটিশ ম্যানেজ</a>
-            <a href="/admin/finance/transaction/" class="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold hover:bg-white/25">ফাইন্যান্স ম্যানেজ</a>
         </div>
         {% endif %}
     </section>

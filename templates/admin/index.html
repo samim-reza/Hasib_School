@@ -1,0 +1,151 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static log %}
+
+{% block content %}
+<div class="admin-home-hero">
+    <h1>অ্যাডমিন ড্যাশবোর্ড</h1>
+    <p>সকল মডিউল, রেকর্ড এবং সাম্প্রতিক আপডেট এখানে এক জায়গায়।</p>
+</div>
+
+<div class="admin-home-grid">
+    <section class="admin-panel admin-panel-large">
+        <div class="admin-panel-head">
+            <h2>মডিউলসমূহ</h2>
+            <p>যে মডিউল ম্যানেজ করতে চান, নিচ থেকে নির্বাচন করুন।</p>
+        </div>
+        {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+    </section>
+
+    <aside class="admin-panel admin-panel-side">
+        <div class="admin-panel-head">
+            <h2>সাম্প্রতিক কার্যক্রম</h2>
+            <p>সর্বশেষ অ্যাডমিন কাজের তালিকা</p>
+        </div>
+        {% get_admin_log 12 as admin_log for_user user %}
+        <ul class="actionlist">
+            {% for entry in admin_log %}
+            <li class="{% if entry.is_addition %}addlink{% elif entry.is_change %}changelink{% elif entry.is_deletion %}deletelink{% endif %}">
+                <span class="action-time">{{ entry.action_time|date:"d M Y, h:i A" }}</span>
+                {% if entry.is_deletion or not entry.get_admin_url %}
+                    {{ entry.object_repr }}
+                {% else %}
+                    <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                {% endif %}
+                <span class="mini">{{ entry.content_type|capfirst }}</span>
+            </li>
+            {% empty %}
+            <li>{% translate 'কোনো সাম্প্রতিক কার্যক্রম পাওয়া যায়নি।' %}</li>
+            {% endfor %}
+        </ul>
+    </aside>
+</div>
+
+<style>
+    .admin-home-hero {
+        border-radius: 18px;
+        padding: 22px 24px;
+        color: #fff;
+        margin-bottom: 18px;
+        background: linear-gradient(120deg, #0f3d32, #165a4a, #2f8f73);
+        box-shadow: 0 12px 24px rgba(15, 61, 50, 0.18);
+    }
+
+    .admin-home-hero h1 {
+        margin: 0;
+        font-family: 'Noto Serif Bengali', serif;
+        font-size: 28px;
+    }
+
+    .admin-home-hero p {
+        margin: 8px 0 0;
+        color: #e9f7f2;
+        font-size: 14px;
+    }
+
+    .admin-home-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+        gap: 18px;
+    }
+
+    .admin-panel {
+        border: 1px solid #d4eee5;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 8px 18px rgba(16, 72, 58, 0.08);
+        overflow: hidden;
+    }
+
+    .admin-panel-head {
+        padding: 14px 16px;
+        border-bottom: 1px solid #d8ece4;
+        background: linear-gradient(120deg, #e9f6f0, #f7fcfa);
+    }
+
+    .admin-panel-head h2 {
+        margin: 0;
+        color: #0f3d32;
+        font-size: 18px;
+    }
+
+    .admin-panel-head p {
+        margin: 4px 0 0;
+        color: #4b5563;
+        font-size: 13px;
+    }
+
+    .admin-panel .module {
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+    }
+
+    .admin-panel .module caption {
+        background: transparent;
+        border: 0;
+        padding: 10px 16px;
+        color: #0f3d32;
+    }
+
+    .admin-panel .module table {
+        margin: 0;
+    }
+
+    .admin-panel-side .actionlist {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .admin-panel-side .actionlist li {
+        margin: 0;
+        padding: 10px 16px;
+        border-bottom: 1px solid #edf4f0;
+    }
+
+    .admin-panel-side .actionlist li:last-child {
+        border-bottom: 0;
+    }
+
+    .admin-panel-side .action-time {
+        display: block;
+        font-size: 11px;
+        color: #6b7280;
+        margin-bottom: 2px;
+    }
+
+    .admin-panel-side .mini {
+        display: block;
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+
+    @media (max-width: 1024px) {
+        .admin-home-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}অ্যাডমিন প্যানেল | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --brand-deep: #0f3d32;
+        --brand-sea: #165a4a;
+        --brand-mint: #2f8f73;
+        --brand-sand: #f2e7cc;
+        --brand-sky: #edf7f3;
+    }
+
+    body {
+        font-family: 'Hind Siliguri', sans-serif;
+        background: radial-gradient(circle at 10% 5%, #f7fcfa 0%, #eef8f4 45%, #e9f4ee 100%);
+        color: #1f2937;
+    }
+
+    #header {
+        background: linear-gradient(120deg, var(--brand-deep), var(--brand-sea));
+        color: #fff;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 22px rgba(15, 61, 50, 0.2);
+    }
+
+    #site-name a {
+        color: #fff;
+        font-family: 'Noto Serif Bengali', serif;
+        letter-spacing: 0.2px;
+    }
+
+    #user-tools,
+    #user-tools a {
+        color: #e8fff8;
+    }
+
+    #content {
+        margin-top: 22px;
+    }
+
+    .dashboard #content-main,
+    .dashboard #content-related,
+    .module,
+    #changelist,
+    #changelist-form {
+        border-radius: 16px;
+    }
+
+    .module,
+    #changelist,
+    #changelist-form,
+    #content-related {
+        border: 1px solid #d4eee5;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 8px 18px rgba(16, 72, 58, 0.08);
+    }
+
+    .module caption,
+    .module h2,
+    .module thead th,
+    #content-related .module h2 {
+        background: linear-gradient(120deg, #e9f6f0, #f7fcfa);
+        color: var(--brand-deep);
+        border-bottom: 1px solid #d8ece4;
+        font-weight: 700;
+    }
+
+    .button,
+    input[type=submit],
+    input[type=button],
+    .submit-row input,
+    a.button {
+        background: var(--brand-mint);
+        border-radius: 999px;
+        border: none;
+        color: #fff;
+    }
+
+    .button:hover,
+    input[type=submit]:hover,
+    input[type=button]:hover,
+    .submit-row input:hover,
+    a.button:hover {
+        background: var(--brand-sea);
+    }
+
+    .breadcrumbs {
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid #d8ece4;
+        border-radius: 12px;
+        color: var(--brand-deep);
+        margin-top: 12px;
+    }
+
+    .breadcrumbs a {
+        color: var(--brand-sea);
+    }
+
+    #nav-sidebar {
+        border-right: 1px solid #d8ece4;
+        background: #f7fcfa;
+    }
+
+    @media (max-width: 1024px) {
+        #header {
+            padding-top: 12px;
+            padding-bottom: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">হাসিব একাডেমি অ্যাডমিন প্যানেল</a></h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

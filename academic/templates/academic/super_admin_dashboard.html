@@ -1,0 +1,50 @@
+{% extends 'academic/base.html' %}
+
+{% block title %}সুপার অ্যাডমিন ড্যাশবোর্ড{% endblock %}
+
+{% block content %}
+<section class="space-y-6">
+    <div class="rounded-3xl bg-gradient-to-r from-brand-deep via-brand-sea to-brand-mint text-white p-6 md:p-8 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="font-display text-3xl md:text-4xl">সুপার অ্যাডমিন ড্যাশবোর্ড</h1>
+                <p class="text-emerald-100 mt-2">একাডেমি ম্যানেজমেন্টের কেন্দ্রীয় কন্ট্রোল প্যানেল</p>
+            </div>
+            <a href="{% url 'academic:super_admin_logout' %}" class="px-5 py-2.5 rounded-full bg-white/15 text-white font-semibold hover:bg-white/25 transition">লগআউট</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm text-slate-500">শিক্ষক</p>
+            <p class="text-3xl font-bold text-brand-deep mt-1">{{ teachers_count }}</p>
+        </div>
+        <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm text-slate-500">অধ্যয়নরত শিক্ষার্থী</p>
+            <p class="text-3xl font-bold text-brand-deep mt-1">{{ active_students_count }}</p>
+        </div>
+        <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm text-slate-500">ভর্তি রেকর্ড</p>
+            <p class="text-3xl font-bold text-brand-deep mt-1">{{ admissions_count }}</p>
+        </div>
+        <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm text-slate-500">উপস্থিতি রেকর্ড</p>
+            <p class="text-3xl font-bold text-brand-deep mt-1">{{ attendance_count }}</p>
+        </div>
+    </div>
+
+    <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+        <h2 class="font-display text-2xl text-brand-deep mb-4">দ্রুত লিংক</h2>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'academic:teacher_portal' %}" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint">শিক্ষক পোর্টাল</a>
+            <a href="{% url 'academic:teacher_management' %}" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint">শিক্ষক ব্যবস্থাপনা</a>
+            <a href="{% url 'academic:admission_portal' %}" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint">ভর্তি পোর্টাল</a>
+            <a href="{% url 'academic:attendance_history' %}" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint">উপস্থিতি ইতিহাস</a>
+            <a href="{% url 'academic:admin_account_settings' %}" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint">অ্যাকাউন্ট সেটিংস</a>
+        </div>
+        <p class="text-sm text-slate-600 mt-4">
+            Django admin panel website থেকে hide করা হয়েছে। প্রয়োজন হলে ব্রাউজারে ম্যানুয়ালি <strong>/admin</strong> লিখে ব্যবহার করুন।
+        </p>
+    </div>
+</section>
+{% endblock %}

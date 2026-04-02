@@ -94,10 +94,16 @@
                 </a>
 
                 <div class="hidden md:flex items-center gap-2 text-sm">
+                    {% if request.user.is_authenticated %}
+                    <span class="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-brand-sand font-semibold">
+                        {% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user.username }}{% endif %}
+                    </span>
+                    <a href="{% url 'academic:account_logout' %}" class="px-4 py-2 rounded-full border border-white/30 hover:bg-white/10 transition">লগআউট</a>
+                    {% endif %}
                     <a href="{% url 'academic:home' %}" class="px-4 py-2 rounded-full hover:bg-white/10 transition">হোম</a>
                     <a href="{% url 'academic:admission_portal' %}" class="px-4 py-2 rounded-full hover:bg-white/10 transition">ভর্তি পোর্টাল</a>
                     <a href="{% url 'academic:teacher_portal' %}" class="px-4 py-2 rounded-full hover:bg-white/10 transition">শিক্ষক পোর্টাল</a>
-                    <a href="{% url 'admin:index' %}" class="px-4 py-2 rounded-full bg-brand-mint hover:bg-emerald-500 transition font-semibold">অ্যাডমিন</a>
+                    <a href="{% url 'academic:super_admin_login' %}" class="px-4 py-2 rounded-full bg-brand-mint hover:bg-emerald-500 transition font-semibold">অ্যাডমিন</a>
                 </div>
 
                 <button @click="mobileMenu = !mobileMenu" class="md:hidden px-3 py-2 rounded-md border border-white/30" aria-label="মেনু">
@@ -106,10 +112,16 @@
             </div>
         </div>
         <div x-show="mobileMenu" x-transition class="md:hidden px-4 pb-4 space-y-2" style="display: none;">
+            {% if request.user.is_authenticated %}
+            <div class="px-3 py-2 rounded-md bg-white/15 border border-white/20 text-brand-sand font-semibold">
+                লগইন: {% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user.username }}{% endif %}
+            </div>
+            <a href="{% url 'academic:account_logout' %}" class="block px-3 py-2 rounded-md border border-white/30 hover:bg-white/10">লগআউট</a>
+            {% endif %}
             <a href="{% url 'academic:home' %}" class="block px-3 py-2 rounded-md bg-white/10">হোম</a>
             <a href="{% url 'academic:admission_portal' %}" class="block px-3 py-2 rounded-md bg-white/10">ভর্তি পোর্টাল</a>
             <a href="{% url 'academic:teacher_portal' %}" class="block px-3 py-2 rounded-md bg-white/10">শিক্ষক পোর্টাল</a>
-            <a href="{% url 'admin:index' %}" class="block px-3 py-2 rounded-md bg-brand-mint">অ্যাডমিন</a>
+            <a href="{% url 'academic:super_admin_login' %}" class="block px-3 py-2 rounded-md bg-brand-mint">অ্যাডমিন</a>
         </div>
     </nav>
 

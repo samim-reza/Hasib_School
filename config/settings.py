@@ -83,7 +83,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -162,7 +162,7 @@ MEDIA_ROOT.mkdir(exist_ok=True)
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Use Django admin auth pages for protected route redirects.
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/super_admin/'
 LOGIN_REDIRECT_URL = '/teacher/'
 LOGOUT_REDIRECT_URL = '/'
 

@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User as AuthUser
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
 from typing import Optional, cast
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urlencode
@@ -19,16 +21,28 @@ SECTION_LABELS = dict(AdmissionRecord.SECTION_CHOICES)
 
 
 def _is_teacher_or_admin(user):
-    return user.is_authenticated and (user.is_superuser or hasattr(user, 'teacher'))
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    try:
+        return getattr(user, 'teacher', None) is not None
+    except ObjectDoesNotExist:
+        return False
 
 
 def _ensure_teacher_or_admin(request: HttpRequest) -> Optional[HttpResponse]:
     if not _is_teacher_or_admin(request.user):
         messages.error(request, 'এই পেজে প্রবেশের অনুমতি নেই।')
-        return redirect('admin:index')
+        return redirect('academic:super_admin_login')
 
     check_password = getattr(request.user, 'check_password', None)
-    if hasattr(request.user, 'teacher') and not request.user.is_superuser and callable(check_password):
+    try:
+        has_teacher_profile = getattr(request.user, 'teacher', None) is not None
+    except ObjectDoesNotExist:
+        has_teacher_profile = False
+
+    if has_teacher_profile and not request.user.is_superuser and callable(check_password):
         change_password_url = reverse('academic:teacher_change_password')
         if request.path != change_password_url and check_password('default123'):
             messages.warning(request, 'প্রথম লগইনে ডিফল্ট পাসওয়ার্ড পরিবর্তন করুন।')
@@ -41,6 +55,13 @@ def _ensure_admin(request: HttpRequest) -> Optional[HttpResponse]:
     if not request.user.is_authenticated or not request.user.is_superuser:
         messages.error(request, 'শুধুমাত্র অ্যাডমিন এই পেজ ব্যবহার করতে পারবেন।')
         return redirect('academic:teacher_portal')
+    return None
+
+
+def _ensure_super_admin(request: HttpRequest) -> Optional[HttpResponse]:
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        messages.error(request, 'শুধুমাত্র সুপার অ্যাডমিন এই পেজ ব্যবহার করতে পারবেন।')
+        return redirect('academic:super_admin_login')
     return None
 
 
@@ -65,6 +86,53 @@ def _log_activity(
         class_name=class_name,
         note=note,
     )
+
+
+def super_admin_login(request: HttpRequest) -> HttpResponse:
+    if request.user.is_authenticated and request.user.is_superuser:
+        return redirect('academic:super_admin_dashboard')
+
+    if request.method == 'POST':
+        username = (request.POST.get('username') or '').strip().lower()
+        password = request.POST.get('password') or ''
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_superuser:
+            login(request, user)
+            messages.success(request, 'সুপার অ্যাডমিন হিসেবে সফলভাবে লগইন হয়েছে।')
+            return redirect('academic:super_admin_dashboard')
+
+        messages.error(request, 'লগইন তথ্য সঠিক নয় বা এটি সুপার অ্যাডমিন অ্যাকাউন্ট নয়।')
+
+    return render(request, 'academic/super_admin_login.html')
+
+
+def super_admin_logout(request: HttpRequest) -> HttpResponse:
+    if request.user.is_authenticated:
+        logout(request)
+    messages.success(request, 'সুপার অ্যাডমিন লগআউট সম্পন্ন হয়েছে।')
+    return redirect('academic:super_admin_login')
+
+
+def account_logout(request: HttpRequest) -> HttpResponse:
+    if request.user.is_authenticated:
+        logout(request)
+    messages.success(request, 'লগআউট সম্পন্ন হয়েছে।')
+    return redirect('academic:home')
+
+
+def super_admin_dashboard(request: HttpRequest) -> HttpResponse:
+    denied = _ensure_super_admin(request)
+    if denied:
+        return denied
+
+    context = {
+        'teachers_count': Teacher.objects.count(),
+        'active_students_count': Student.objects.filter(is_active=True).count(),
+        'admissions_count': AdmissionRecord.objects.count(),
+        'attendance_count': Attendance.objects.count(),
+    }
+    return render(request, 'academic/super_admin_dashboard.html', context)
 
 def home_view(request: HttpRequest) -> HttpResponse:
     notices = Notice.objects.filter(is_active=True)
