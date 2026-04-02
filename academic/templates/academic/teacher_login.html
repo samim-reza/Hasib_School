@@ -1,0 +1,32 @@
+{% extends 'academic/base.html' %}
+
+{% block title %}শিক্ষক লগইন{% endblock %}
+
+{% block content %}
+<section class="max-w-xl mx-auto">
+    <div class="rounded-3xl bg-gradient-to-r from-brand-deep via-brand-sea to-brand-mint text-white p-6 md:p-8 shadow-xl mb-6">
+        <h1 class="font-display text-3xl">শিক্ষক লগইন</h1>
+        <p class="text-emerald-100 mt-2">শিক্ষক পোর্টাল ব্যবহারের জন্য আপনার ইউজারনেম এবং পাসওয়ার্ড দিন।</p>
+    </div>
+
+    <div class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-emerald-100 p-6">
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ইউজারনেম</label>
+                <input type="text" name="username" required class="w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">পাসওয়ার্ড</label>
+                <input type="password" name="password" required class="w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <button type="submit" class="w-full px-5 py-2.5 rounded-full bg-brand-sea text-white font-semibold hover:bg-brand-mint transition">লগইন করুন</button>
+        </form>
+
+        <div class="mt-4 text-sm text-slate-600 bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+            সুপার অ্যাডমিন লগইনের জন্য <a href="{% url 'academic:super_admin_login' %}" class="text-brand-sea font-semibold">এখানে ক্লিক করুন</a>।
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -162,7 +162,7 @@ MEDIA_ROOT.mkdir(exist_ok=True)
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Use Django admin auth pages for protected route redirects.
-LOGIN_URL = '/super_admin/'
+LOGIN_URL = '/teacher/login/'
 LOGIN_REDIRECT_URL = '/teacher/'
 LOGOUT_REDIRECT_URL = '/'
 

@@ -5,6 +5,7 @@ app_name = 'academic'
 urlpatterns = [
     path('', views.home_view, name='home'),
     path('logout/', views.account_logout, name='account_logout'),
+    path('teacher/login/', views.teacher_login, name='teacher_login'),
     path('super_admin/', views.super_admin_login, name='super_admin_login'),
     path('super_admin/dashboard/', views.super_admin_dashboard, name='super_admin_dashboard'),
     path('super_admin/logout/', views.super_admin_logout, name='super_admin_logout'),

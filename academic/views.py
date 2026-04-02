@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.http import url_has_allowed_host_and_scheme
 from typing import Optional, cast
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urlencode
@@ -34,7 +35,7 @@ def _is_teacher_or_admin(user):
 def _ensure_teacher_or_admin(request: HttpRequest) -> Optional[HttpResponse]:
     if not _is_teacher_or_admin(request.user):
         messages.error(request, 'এই পেজে প্রবেশের অনুমতি নেই।')
-        return redirect('academic:super_admin_login')
+        return redirect('academic:teacher_login')
 
     check_password = getattr(request.user, 'check_password', None)
     try:
@@ -105,6 +106,29 @@ def super_admin_login(request: HttpRequest) -> HttpResponse:
         messages.error(request, 'লগইন তথ্য সঠিক নয় বা এটি সুপার অ্যাডমিন অ্যাকাউন্ট নয়।')
 
     return render(request, 'academic/super_admin_login.html')
+
+
+def teacher_login(request: HttpRequest) -> HttpResponse:
+    if _is_teacher_or_admin(request.user):
+        return redirect('academic:teacher_portal')
+
+    next_url = request.POST.get('next') or request.GET.get('next') or reverse('academic:teacher_portal')
+    if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        next_url = reverse('academic:teacher_portal')
+
+    if request.method == 'POST':
+        username = (request.POST.get('username') or '').strip().lower()
+        password = request.POST.get('password') or ''
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None and _is_teacher_or_admin(user):
+            login(request, user)
+            messages.success(request, 'সফলভাবে লগইন হয়েছে।')
+            return redirect(next_url)
+
+        messages.error(request, 'ইউজারনেম বা পাসওয়ার্ড সঠিক নয়।')
+
+    return render(request, 'academic/teacher_login.html', {'next_url': next_url})
 
 
 def super_admin_logout(request: HttpRequest) -> HttpResponse:
