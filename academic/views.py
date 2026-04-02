@@ -21,6 +21,10 @@ from datetime import date
 SECTION_LABELS = dict(AdmissionRecord.SECTION_CHOICES)
 
 
+def health_check(request: HttpRequest) -> HttpResponse:
+    return HttpResponse('ok', content_type='text/plain')
+
+
 def _is_teacher_or_admin(user):
     if not user.is_authenticated:
         return False
