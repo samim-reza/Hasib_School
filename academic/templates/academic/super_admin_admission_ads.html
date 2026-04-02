@@ -1,0 +1,106 @@
+{% extends 'academic/base.html' %}
+
+{% block title %}ভর্তি বিজ্ঞাপন ম্যানেজমেন্ট{% endblock %}
+
+{% block content %}
+<section class="space-y-6">
+    <div class="rounded-3xl bg-gradient-to-r from-brand-deep via-brand-sea to-brand-mint text-white p-6 md:p-8 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="font-display text-3xl md:text-4xl">ভর্তি বিজ্ঞাপন ম্যানেজমেন্ট</h1>
+                <p class="text-emerald-100 mt-2">ভর্তি headline/subheadline তৈরি ও নিয়ন্ত্রণ করুন</p>
+            </div>
+            <a href="{% url 'academic:super_admin_dashboard' %}" class="px-5 py-2.5 rounded-full bg-white/15 text-white font-semibold hover:bg-white/25 transition">ড্যাশবোর্ডে ফিরে যান</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="xl:col-span-1 bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <h2 class="font-display text-2xl text-brand-deep mb-4">
+                {% if edit_headline %}বিজ্ঞাপন আপডেট করুন{% else %}নতুন বিজ্ঞাপন দিন{% endif %}
+            </h2>
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                {% if edit_headline %}
+                <input type="hidden" name="headline_id" value="{{ edit_headline.id }}">
+                {% endif %}
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">হেডলাইন</label>
+                    <input type="text" name="headline" required value="{% if edit_headline %}{{ edit_headline.headline }}{% endif %}" class="w-full rounded-xl border border-emerald-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-mint">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">সাব-হেডলাইন</label>
+                    <input type="text" name="subheadline" value="{% if edit_headline %}{{ edit_headline.subheadline }}{% endif %}" class="w-full rounded-xl border border-emerald-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-mint">
+                </div>
+
+                <label class="flex items-center gap-2 text-sm text-slate-700">
+                    <input type="checkbox" name="is_active" class="rounded border-emerald-300" {% if edit_headline %}{% if edit_headline.is_active %}checked{% endif %}{% else %}checked{% endif %}>
+                    ওয়েবসাইটে সক্রিয় দেখান
+                </label>
+
+                <div class="flex flex-wrap gap-2 pt-2">
+                    <button type="submit" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint font-semibold">
+                        {% if edit_headline %}আপডেট করুন{% else %}সেভ করুন{% endif %}
+                    </button>
+                    {% if edit_headline %}
+                    <a href="{% url 'academic:super_admin_admission_ads' %}" class="px-4 py-2 rounded-full border border-emerald-300 text-brand-deep hover:bg-emerald-50">নতুন ফর্ম</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <div class="xl:col-span-2 bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm overflow-x-auto">
+            <h2 class="font-display text-2xl text-brand-deep mb-4">ভর্তি বিজ্ঞাপন তালিকা</h2>
+            <table class="w-full min-w-[700px] text-sm">
+                <thead>
+                    <tr class="text-left text-slate-500 border-b border-emerald-100">
+                        <th class="py-2 pr-2">হেডলাইন</th>
+                        <th class="py-2 pr-2">সাব-হেডলাইন</th>
+                        <th class="py-2 pr-2">স্ট্যাটাস</th>
+                        <th class="py-2 pr-2">আপডেট</th>
+                        <th class="py-2">অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ad in headlines %}
+                    <tr class="border-b border-emerald-50">
+                        <td class="py-3 pr-2 font-semibold text-slate-800">{{ ad.headline }}</td>
+                        <td class="py-3 pr-2 text-slate-600">{{ ad.subheadline|default:'-' }}</td>
+                        <td class="py-3 pr-2">
+                            {% if ad.is_active %}
+                            <span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">সক্রিয়</span>
+                            {% else %}
+                            <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-600">নিষ্ক্রিয়</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 pr-2 text-slate-600">{{ ad.updated_at|date:'Y-m-d H:i' }}</td>
+                        <td class="py-3">
+                            <div class="flex flex-wrap gap-2">
+                                <a href="{% url 'academic:super_admin_admission_ads' %}?edit={{ ad.id }}" class="px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200">এডিট</a>
+                                <form method="post" action="{% url 'academic:super_admin_admission_ads_toggle' ad.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="px-3 py-1.5 rounded-full bg-sky-100 text-sky-800 hover:bg-sky-200">
+                                        {% if ad.is_active %}নিষ্ক্রিয়{% else %}সক্রিয়{% endif %}
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'academic:super_admin_admission_ads_delete' ad.id %}" onsubmit="return confirm('ভর্তি বিজ্ঞাপন মুছে ফেলতে চান?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="px-3 py-1.5 rounded-full bg-rose-100 text-rose-700 hover:bg-rose-200">মুছুন</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-slate-500">এখনও কোনো ভর্তি বিজ্ঞাপন নেই।</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

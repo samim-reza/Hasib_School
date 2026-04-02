@@ -17,8 +17,8 @@ from .models import Transaction
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-	list_display = ("title", "transaction_type", "amount", "date")
-	list_filter = ("transaction_type", "date")
+	list_display = ("title", "transaction_type", "category", "amount", "date")
+	list_filter = ("transaction_type", "category", "date")
 	date_hierarchy = "date"
 	search_fields = ("title", "description")
 	change_list_template = "admin/finance/transaction/change_list.html"
@@ -61,11 +61,16 @@ class TransactionAdmin(admin.ModelAdmin):
 	def _summary(self, queryset):
 		income = sum((tx.amount for tx in queryset if tx.transaction_type == "income"), Decimal("0.00"))
 		expense = sum((tx.amount for tx in queryset if tx.transaction_type == "expense"), Decimal("0.00"))
+		category_totals = {}
+		for tx in queryset:
+			label = tx.get_category_display()
+			category_totals[label] = category_totals.get(label, Decimal("0.00")) + tx.amount
 		return {
 			"income": income,
 			"expense": expense,
 			"balance": income - expense,
 			"count": queryset.count(),
+			"category_totals": category_totals,
 		}
 
 	def history_report_view(self, request):
@@ -128,7 +133,8 @@ class TransactionAdmin(admin.ModelAdmin):
 		doc.setFont("Helvetica-Bold", 9)
 		doc.drawString(18 * mm, y, "Date")
 		doc.drawString(45 * mm, y, "Type")
-		doc.drawString(75 * mm, y, "Title")
+		doc.drawString(75 * mm, y, "Category")
+		doc.drawString(112 * mm, y, "Title")
 		doc.drawString(160 * mm, y, "Amount")
 		y -= 5 * mm
 		doc.setFont("Helvetica", 9)
@@ -140,15 +146,18 @@ class TransactionAdmin(admin.ModelAdmin):
 				doc.setFont("Helvetica-Bold", 9)
 				doc.drawString(18 * mm, y, "Date")
 				doc.drawString(45 * mm, y, "Type")
-				doc.drawString(75 * mm, y, "Title")
+				doc.drawString(75 * mm, y, "Category")
+				doc.drawString(112 * mm, y, "Title")
 				doc.drawString(160 * mm, y, "Amount")
 				y -= 5 * mm
 				doc.setFont("Helvetica", 9)
 
-			title = tx.title if len(tx.title) <= 40 else f"{tx.title[:37]}..."
+			title = tx.title if len(tx.title) <= 24 else f"{tx.title[:21]}..."
+			category = tx.get_category_display()
 			doc.drawString(18 * mm, y, tx.date.strftime("%Y-%m-%d"))
 			doc.drawString(45 * mm, y, tx.get_transaction_type_display())
-			doc.drawString(75 * mm, y, title)
+			doc.drawString(75 * mm, y, category)
+			doc.drawString(112 * mm, y, title)
 			doc.drawRightString(196 * mm, y, f"BDT {tx.amount}")
 			y -= 5 * mm
 

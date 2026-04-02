@@ -1,0 +1,216 @@
+{% extends 'academic/base.html' %}
+
+{% block title %}ফাইন্যান্স ম্যানেজমেন্ট{% endblock %}
+
+{% block content %}
+<section class="space-y-6">
+    <div class="rounded-3xl bg-gradient-to-r from-brand-deep via-brand-sea to-brand-mint text-white p-6 md:p-8 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="font-display text-3xl md:text-4xl">ফাইন্যান্স ম্যানেজমেন্ট</h1>
+                <p class="text-emerald-100 mt-2">ক্যাটাগরি ভিত্তিক আয়-ব্যয় ম্যানেজ করুন: বোর্ডিং, ফি, বেতন, বিল, ফার্নিচার, অন্যান্য</p>
+            </div>
+            <a href="{% url 'academic:super_admin_dashboard' %}" class="px-5 py-2.5 rounded-full bg-white/15 text-white font-semibold hover:bg-white/25 transition">ড্যাশবোর্ডে ফিরে যান</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm text-slate-500">মোট আয়</p>
+            <p class="text-2xl font-bold text-emerald-700 mt-1">৳ {{ income_total }}</p>
+        </div>
+        <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm text-slate-500">মোট ব্যয়</p>
+            <p class="text-2xl font-bold text-rose-700 mt-1">৳ {{ expense_total }}</p>
+        </div>
+        <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm text-slate-500">ব্যালেন্স</p>
+            <p class="text-2xl font-bold text-brand-deep mt-1">৳ {{ balance_total }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="xl:col-span-1 bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <h2 class="font-display text-2xl text-brand-deep mb-4">
+                {% if edit_transaction %}লেনদেন আপডেট করুন{% else %}নতুন লেনদেন দিন{% endif %}
+            </h2>
+
+            <form method="post" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                {% if edit_transaction %}
+                <input type="hidden" name="transaction_id" value="{{ edit_transaction.id }}">
+                {% endif %}
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">শিরোনাম</label>
+                    <input type="text" name="title" required value="{% if edit_transaction %}{{ edit_transaction.title }}{% endif %}" class="w-full rounded-xl border border-emerald-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-mint">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">পরিমাণ (৳)</label>
+                    <input type="number" name="amount" min="0.01" step="0.01" required value="{% if edit_transaction %}{{ edit_transaction.amount }}{% endif %}" class="w-full rounded-xl border border-emerald-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-mint">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">ধরন</label>
+                    <select name="transaction_type" required class="w-full rounded-xl border border-emerald-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-mint">
+                        <option value="">নির্বাচন করুন</option>
+                        {% for value, label in transaction_type_choices %}
+                        <option value="{{ value }}" {% if edit_transaction and edit_transaction.transaction_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">ক্যাটাগরি</label>
+                    <select name="category" required class="w-full rounded-xl border border-emerald-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-mint">
+                        <option value="">নির্বাচন করুন</option>
+                        {% for value, label in category_choices %}
+                        <option value="{{ value }}" {% if edit_transaction and edit_transaction.category == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">বিস্তারিত</label>
+                    <textarea name="description" rows="4" class="w-full rounded-xl border border-emerald-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-mint">{% if edit_transaction %}{{ edit_transaction.description }}{% endif %}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">রসিদ/ফাইল</label>
+                    <input type="file" name="receipt" class="w-full rounded-xl border border-emerald-200 px-3 py-2 bg-white">
+                    {% if edit_transaction and edit_transaction.receipt %}
+                    <a href="{{ edit_transaction.receipt.url }}" target="_blank" class="text-sm text-brand-sea underline mt-2 inline-block">বর্তমান রসিদ দেখুন</a>
+                    <label class="flex items-center gap-2 mt-2 text-sm text-slate-700">
+                        <input type="checkbox" name="remove_receipt" class="rounded border-emerald-300">
+                        বর্তমান রসিদ মুছে দিন
+                    </label>
+                    {% endif %}
+                </div>
+
+                <div class="flex flex-wrap gap-2 pt-2">
+                    <button type="submit" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint font-semibold">
+                        {% if edit_transaction %}আপডেট করুন{% else %}সেভ করুন{% endif %}
+                    </button>
+                    {% if edit_transaction %}
+                    <a href="{% url 'academic:super_admin_finance_management' %}" class="px-4 py-2 rounded-full border border-emerald-300 text-brand-deep hover:bg-emerald-50">নতুন ফর্ম</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <div class="xl:col-span-2 space-y-6">
+            <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+                <h2 class="font-display text-2xl text-brand-deep mb-4">ফিল্টার</h2>
+                <form method="get" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ধরন</label>
+                        <select name="transaction_type" class="w-full rounded-xl border border-emerald-200 px-3 py-2">
+                            <option value="">সব</option>
+                            {% for value, label in transaction_type_choices %}
+                            <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ক্যাটাগরি</label>
+                        <select name="category" class="w-full rounded-xl border border-emerald-200 px-3 py-2">
+                            <option value="">সব</option>
+                            {% for value, label in category_choices %}
+                            <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">শুরুর তারিখ</label>
+                        <input type="date" name="start_date" value="{{ start_date }}" class="w-full rounded-xl border border-emerald-200 px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">শেষ তারিখ</label>
+                        <input type="date" name="end_date" value="{{ end_date }}" class="w-full rounded-xl border border-emerald-200 px-3 py-2">
+                    </div>
+                    <div class="md:col-span-2 flex flex-wrap gap-2">
+                        <button type="submit" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint">ফিল্টার করুন</button>
+                        <a href="{% url 'academic:super_admin_finance_management' %}" class="px-4 py-2 rounded-full border border-emerald-300 text-brand-deep hover:bg-emerald-50">রিসেট</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+                <h2 class="font-display text-2xl text-brand-deep mb-4">ক্যাটাগরি সারাংশ</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {% for row in category_breakdown %}
+                    <div class="rounded-xl border border-emerald-100 bg-emerald-50/40 p-3">
+                        <p class="text-sm text-slate-500">{{ row.label }}</p>
+                        <p class="text-lg font-semibold text-brand-deep">৳ {{ row.total }}</p>
+                        <p class="text-xs text-slate-500">এন্ট্রি: {{ row.items }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-slate-500">এই ফিল্টারে কোনো ডাটা নেই।</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm overflow-x-auto">
+                <h2 class="font-display text-2xl text-brand-deep mb-4">লেনদেন তালিকা</h2>
+                <table class="w-full min-w-[860px] text-sm">
+                    <thead>
+                        <tr class="text-left text-slate-500 border-b border-emerald-100">
+                            <th class="py-2 pr-2">তারিখ</th>
+                            <th class="py-2 pr-2">শিরোনাম</th>
+                            <th class="py-2 pr-2">ধরন</th>
+                            <th class="py-2 pr-2">ক্যাটাগরি</th>
+                            <th class="py-2 pr-2">পরিমাণ</th>
+                            <th class="py-2 pr-2">রসিদ</th>
+                            <th class="py-2">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in page_obj %}
+                        <tr class="border-b border-emerald-50">
+                            <td class="py-3 pr-2 text-slate-600">{{ tx.date|date:'Y-m-d' }}</td>
+                            <td class="py-3 pr-2 font-semibold text-slate-800">{{ tx.title }}</td>
+                            <td class="py-3 pr-2">{{ tx.get_transaction_type_display }}</td>
+                            <td class="py-3 pr-2">{{ tx.get_category_display }}</td>
+                            <td class="py-3 pr-2 font-semibold">৳ {{ tx.amount }}</td>
+                            <td class="py-3 pr-2">
+                                {% if tx.receipt %}
+                                <a href="{{ tx.receipt.url }}" target="_blank" class="text-brand-sea underline">দেখুন</a>
+                                {% else %}
+                                <span class="text-slate-400">নেই</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3">
+                                <div class="flex flex-wrap gap-2">
+                                    <a href="{% url 'academic:super_admin_finance_management' %}?edit={{ tx.id }}" class="px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200">এডিট</a>
+                                    <form method="post" action="{% url 'academic:super_admin_finance_delete' tx.id %}" onsubmit="return confirm('লেনদেন মুছে ফেলতে চান?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="px-3 py-1.5 rounded-full bg-rose-100 text-rose-700 hover:bg-rose-200">মুছুন</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-slate-500">এই ফিল্টারে কোনো লেনদেন পাওয়া যায়নি।</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if page_obj.paginator.num_pages > 1 %}
+                <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&transaction_type={{ selected_type }}&category={{ selected_category }}&start_date={{ start_date }}&end_date={{ end_date }}" class="px-3 py-1.5 rounded-full border border-emerald-300 text-brand-deep hover:bg-emerald-50">পূর্বের</a>
+                    {% endif %}
+                    <span class="px-3 py-1.5 rounded-full bg-emerald-50 text-brand-deep">পৃষ্ঠা {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&transaction_type={{ selected_type }}&category={{ selected_category }}&start_date={{ start_date }}&end_date={{ end_date }}" class="px-3 py-1.5 rounded-full border border-emerald-300 text-brand-deep hover:bg-emerald-50">পরের</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

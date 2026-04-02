@@ -9,16 +9,20 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Sum, Count
 from django.utils.http import url_has_allowed_host_and_scheme
 from typing import Optional, cast
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urlencode
 from .models import Student, Attendance, Teacher, AdmissionRecord, TeacherActivityLog
 from core.models import Notice, AdmissionHeadline
-from datetime import date
+from finance.models import Transaction
+from datetime import date, datetime
 
 
 SECTION_LABELS = dict(AdmissionRecord.SECTION_CHOICES)
+TRANSACTION_TYPE_LABELS = dict(Transaction.TRANSACTION_TYPES)
+TRANSACTION_CATEGORY_LABELS = dict(Transaction.CATEGORY_CHOICES)
 
 
 def health_check(request: HttpRequest) -> HttpResponse:
@@ -159,8 +163,364 @@ def super_admin_dashboard(request: HttpRequest) -> HttpResponse:
         'active_students_count': Student.objects.filter(is_active=True).count(),
         'admissions_count': AdmissionRecord.objects.count(),
         'attendance_count': Attendance.objects.count(),
+        'notices_count': Notice.objects.count(),
+        'active_notices_count': Notice.objects.filter(is_active=True).count(),
+        'admission_headlines_count': AdmissionHeadline.objects.count(),
+        'active_admission_headlines_count': AdmissionHeadline.objects.filter(is_active=True).count(),
+        'transactions_count': Transaction.objects.count(),
     }
     return render(request, 'academic/super_admin_dashboard.html', context)
+
+
+def super_admin_notice_board(request: HttpRequest) -> HttpResponse:
+    denied = _ensure_super_admin(request)
+    if denied:
+        return denied
+
+    edit_notice: Optional[Notice] = None
+    edit_id = (request.GET.get('edit') or '').strip()
+    if edit_id:
+        if edit_id.isdigit():
+            edit_notice = get_object_or_404(Notice, id=int(edit_id))
+        else:
+            messages.error(request, 'নোটিশ এডিট করার জন্য সঠিক আইডি দিন।')
+            return redirect('academic:super_admin_notice_board')
+
+    if request.method == 'POST':
+        notice_id = (request.POST.get('notice_id') or '').strip()
+        title = (request.POST.get('title') or '').strip()
+        description = (request.POST.get('description') or '').strip()
+        is_active = request.POST.get('is_active') == 'on'
+        document = request.FILES.get('document')
+        remove_document = request.POST.get('remove_document') == 'on'
+
+        if not title or not description:
+            messages.error(request, 'শিরোনাম এবং বিবরণ বাধ্যতামূলক।')
+            if notice_id:
+                return redirect(f"{reverse('academic:super_admin_notice_board')}?edit={notice_id}")
+            return redirect('academic:super_admin_notice_board')
+
+        if notice_id:
+            notice = get_object_or_404(Notice, id=int(notice_id))
+            notice.title = title
+            notice.description = description
+            notice.is_active = is_active
+
+            if remove_document and notice.document:
+                notice.document.delete(save=False)
+                setattr(notice, 'document', None)
+
+            if document:
+                if notice.document:
+                    notice.document.delete(save=False)
+                setattr(notice, 'document', document)
+
+            notice.save()
+            messages.success(request, 'নোটিশ সফলভাবে আপডেট হয়েছে।')
+        else:
+            Notice.objects.create(
+                title=title,
+                description=description,
+                is_active=is_active,
+                document=document,
+            )
+            messages.success(request, 'নতুন নোটিশ প্রকাশ করা হয়েছে।')
+
+        return redirect('academic:super_admin_notice_board')
+
+    notices = Notice.objects.order_by('-created_at')
+    return render(
+        request,
+        'academic/super_admin_notice_board.html',
+        {
+            'notices': notices,
+            'edit_notice': edit_notice,
+        },
+    )
+
+
+def super_admin_notice_toggle(request: HttpRequest, notice_id: int) -> HttpResponse:
+    denied = _ensure_super_admin(request)
+    if denied:
+        return denied
+
+    if request.method != 'POST':
+        return redirect('academic:super_admin_notice_board')
+
+    notice = get_object_or_404(Notice, id=notice_id)
+    notice.is_active = not notice.is_active
+    notice.save(update_fields=['is_active'])
+    status_text = 'সক্রিয়' if notice.is_active else 'নিষ্ক্রিয়'
+    messages.success(request, f'নোটিশ {status_text} করা হয়েছে।')
+    return redirect('academic:super_admin_notice_board')
+
+
+def super_admin_notice_delete(request: HttpRequest, notice_id: int) -> HttpResponse:
+    denied = _ensure_super_admin(request)
+    if denied:
+        return denied
+
+    if request.method != 'POST':
+        return redirect('academic:super_admin_notice_board')
+
+    notice = get_object_or_404(Notice, id=notice_id)
+    if notice.document:
+        notice.document.delete(save=False)
+    notice.delete()
+    messages.success(request, 'নোটিশ মুছে ফেলা হয়েছে।')
+    return redirect('academic:super_admin_notice_board')
+
+
+def super_admin_admission_ads(request: HttpRequest) -> HttpResponse:
+    denied = _ensure_super_admin(request)
+    if denied:
+        return denied
+
+    edit_headline: Optional[AdmissionHeadline] = None
+    edit_id = (request.GET.get('edit') or '').strip()
+    if edit_id:
+        if edit_id.isdigit():
+            edit_headline = get_object_or_404(AdmissionHeadline, id=int(edit_id))
+        else:
+            messages.error(request, 'ভর্তি বিজ্ঞাপনের সঠিক আইডি দিন।')
+            return redirect('academic:super_admin_admission_ads')
+
+    if request.method == 'POST':
+        headline_id = (request.POST.get('headline_id') or '').strip()
+        headline = (request.POST.get('headline') or '').strip()
+        subheadline = (request.POST.get('subheadline') or '').strip()
+        is_active = request.POST.get('is_active') == 'on'
+
+        if not headline:
+            messages.error(request, 'হেডলাইন বাধ্যতামূলক।')
+            if headline_id:
+                return redirect(f"{reverse('academic:super_admin_admission_ads')}?edit={headline_id}")
+            return redirect('academic:super_admin_admission_ads')
+
+        if headline_id:
+            admission_headline = get_object_or_404(AdmissionHeadline, id=int(headline_id))
+            admission_headline.headline = headline
+            admission_headline.subheadline = subheadline
+            admission_headline.is_active = is_active
+            admission_headline.save()
+            messages.success(request, 'ভর্তি বিজ্ঞাপন আপডেট হয়েছে।')
+        else:
+            AdmissionHeadline.objects.create(
+                headline=headline,
+                subheadline=subheadline,
+                is_active=is_active,
+            )
+            messages.success(request, 'নতুন ভর্তি বিজ্ঞাপন যুক্ত হয়েছে।')
+
+        return redirect('academic:super_admin_admission_ads')
+
+    headlines = AdmissionHeadline.objects.order_by('-updated_at')
+    return render(
+        request,
+        'academic/super_admin_admission_ads.html',
+        {
+            'headlines': headlines,
+            'edit_headline': edit_headline,
+        },
+    )
+
+
+def super_admin_admission_ads_toggle(request: HttpRequest, headline_id: int) -> HttpResponse:
+    denied = _ensure_super_admin(request)
+    if denied:
+        return denied
+
+    if request.method != 'POST':
+        return redirect('academic:super_admin_admission_ads')
+
+    headline = get_object_or_404(AdmissionHeadline, id=headline_id)
+    headline.is_active = not headline.is_active
+    headline.save(update_fields=['is_active'])
+    status_text = 'সক্রিয়' if headline.is_active else 'নিষ্ক্রিয়'
+    messages.success(request, f'ভর্তি বিজ্ঞাপন {status_text} করা হয়েছে।')
+    return redirect('academic:super_admin_admission_ads')
+
+
+def super_admin_admission_ads_delete(request: HttpRequest, headline_id: int) -> HttpResponse:
+    denied = _ensure_super_admin(request)
+    if denied:
+        return denied
+
+    if request.method != 'POST':
+        return redirect('academic:super_admin_admission_ads')
+
+    headline = get_object_or_404(AdmissionHeadline, id=headline_id)
+    headline.delete()
+    messages.success(request, 'ভর্তি বিজ্ঞাপন মুছে ফেলা হয়েছে।')
+    return redirect('academic:super_admin_admission_ads')
+
+
+def super_admin_finance_management(request: HttpRequest) -> HttpResponse:
+    denied = _ensure_super_admin(request)
+    if denied:
+        return denied
+
+    edit_transaction: Optional[Transaction] = None
+    edit_id = (request.GET.get('edit') or '').strip()
+    if edit_id:
+        if edit_id.isdigit():
+            edit_transaction = get_object_or_404(Transaction, id=int(edit_id))
+        else:
+            messages.error(request, 'লেনদেন এডিট করার জন্য সঠিক আইডি দিন।')
+            return redirect('academic:super_admin_finance_management')
+
+    if request.method == 'POST':
+        transaction_id = (request.POST.get('transaction_id') or '').strip()
+        title = (request.POST.get('title') or '').strip()
+        amount_raw = (request.POST.get('amount') or '').strip()
+        transaction_type = (request.POST.get('transaction_type') or '').strip()
+        category = (request.POST.get('category') or '').strip()
+        description = (request.POST.get('description') or '').strip()
+        receipt = request.FILES.get('receipt')
+        remove_receipt = request.POST.get('remove_receipt') == 'on'
+
+        if not title:
+            messages.error(request, 'শিরোনাম বাধ্যতামূলক।')
+            if transaction_id:
+                return redirect(f"{reverse('academic:super_admin_finance_management')}?edit={transaction_id}")
+            return redirect('academic:super_admin_finance_management')
+
+        if transaction_type not in TRANSACTION_TYPE_LABELS:
+            messages.error(request, 'আয়/ব্যয়ের ধরন সঠিকভাবে নির্বাচন করুন।')
+            return redirect('academic:super_admin_finance_management')
+
+        if category not in TRANSACTION_CATEGORY_LABELS:
+            messages.error(request, 'ক্যাটাগরি সঠিকভাবে নির্বাচন করুন।')
+            return redirect('academic:super_admin_finance_management')
+
+        try:
+            amount = Decimal(amount_raw)
+        except (InvalidOperation, ValueError):
+            messages.error(request, 'পরিমাণ সঠিক সংখ্যায় লিখুন।')
+            return redirect('academic:super_admin_finance_management')
+
+        if amount <= Decimal('0'):
+            messages.error(request, 'পরিমাণ অবশ্যই ০-এর বেশি হতে হবে।')
+            return redirect('academic:super_admin_finance_management')
+
+        if transaction_id:
+            transaction = get_object_or_404(Transaction, id=int(transaction_id))
+            transaction.title = title
+            transaction.amount = amount
+            transaction.transaction_type = transaction_type
+            transaction.category = category
+            transaction.description = description
+
+            if remove_receipt and transaction.receipt:
+                transaction.receipt.delete(save=False)
+                setattr(transaction, 'receipt', None)
+
+            if receipt:
+                if transaction.receipt:
+                    transaction.receipt.delete(save=False)
+                setattr(transaction, 'receipt', receipt)
+
+            transaction.save()
+            messages.success(request, 'লেনদেন আপডেট হয়েছে।')
+        else:
+            Transaction.objects.create(
+                title=title,
+                amount=amount,
+                transaction_type=transaction_type,
+                category=category,
+                description=description,
+                receipt=receipt,
+            )
+            messages.success(request, 'নতুন লেনদেন যুক্ত হয়েছে।')
+
+        return redirect('academic:super_admin_finance_management')
+
+    transactions = Transaction.objects.order_by('-date', '-id')
+
+    selected_type = (request.GET.get('transaction_type') or '').strip()
+    selected_category = (request.GET.get('category') or '').strip()
+    start_date_raw = (request.GET.get('start_date') or '').strip()
+    end_date_raw = (request.GET.get('end_date') or '').strip()
+
+    if selected_type in TRANSACTION_TYPE_LABELS:
+        transactions = transactions.filter(transaction_type=selected_type)
+
+    if selected_category in TRANSACTION_CATEGORY_LABELS:
+        transactions = transactions.filter(category=selected_category)
+
+    if start_date_raw:
+        try:
+            start_date = datetime.strptime(start_date_raw, '%Y-%m-%d').date()
+            transactions = transactions.filter(date__gte=start_date)
+        except ValueError:
+            messages.error(request, 'শুরুর তারিখ সঠিক ফরম্যাটে দিন (YYYY-MM-DD)।')
+
+    if end_date_raw:
+        try:
+            end_date = datetime.strptime(end_date_raw, '%Y-%m-%d').date()
+            transactions = transactions.filter(date__lte=end_date)
+        except ValueError:
+            messages.error(request, 'শেষের তারিখ সঠিক ফরম্যাটে দিন (YYYY-MM-DD)।')
+
+    income_total = (
+        transactions.filter(transaction_type='income').aggregate(total=Sum('amount')).get('total')
+        or Decimal('0.00')
+    )
+    expense_total = (
+        transactions.filter(transaction_type='expense').aggregate(total=Sum('amount')).get('total')
+        or Decimal('0.00')
+    )
+    balance_total = income_total - expense_total
+
+    category_breakdown_raw = (
+        transactions.values('category')
+        .annotate(total=Sum('amount'), items=Count('id'))
+        .order_by('category')
+    )
+    category_breakdown = [
+        {
+            'label': TRANSACTION_CATEGORY_LABELS.get(item['category'], item['category']),
+            'total': item['total'] or Decimal('0.00'),
+            'items': item['items'],
+        }
+        for item in category_breakdown_raw
+    ]
+
+    paginator = Paginator(transactions, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'edit_transaction': edit_transaction,
+        'transaction_type_choices': Transaction.TRANSACTION_TYPES,
+        'category_choices': Transaction.CATEGORY_CHOICES,
+        'selected_type': selected_type,
+        'selected_category': selected_category,
+        'start_date': start_date_raw,
+        'end_date': end_date_raw,
+        'income_total': income_total,
+        'expense_total': expense_total,
+        'balance_total': balance_total,
+        'category_breakdown': category_breakdown,
+    }
+    return render(request, 'academic/super_admin_finance_management.html', context)
+
+
+def super_admin_finance_delete(request: HttpRequest, transaction_id: int) -> HttpResponse:
+    denied = _ensure_super_admin(request)
+    if denied:
+        return denied
+
+    if request.method != 'POST':
+        return redirect('academic:super_admin_finance_management')
+
+    transaction = get_object_or_404(Transaction, id=transaction_id)
+    if transaction.receipt:
+        transaction.receipt.delete(save=False)
+    transaction.delete()
+    messages.success(request, 'লেনদেন মুছে ফেলা হয়েছে।')
+    return redirect('academic:super_admin_finance_management')
 
 def home_view(request: HttpRequest) -> HttpResponse:
     notices = Notice.objects.filter(is_active=True)

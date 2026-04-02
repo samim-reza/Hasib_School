@@ -1,0 +1,124 @@
+{% extends 'academic/base.html' %}
+
+{% block title %}নোটিশ বোর্ড ম্যানেজমেন্ট{% endblock %}
+
+{% block content %}
+<section class="space-y-6">
+    <div class="rounded-3xl bg-gradient-to-r from-brand-deep via-brand-sea to-brand-mint text-white p-6 md:p-8 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="font-display text-3xl md:text-4xl">নোটিশ বোর্ড ম্যানেজমেন্ট</h1>
+                <p class="text-emerald-100 mt-2">সুপার অ্যাডমিন থেকে নোটিশ তৈরি, আপডেট, সক্রিয়/নিষ্ক্রিয় ও মুছে ফেলুন</p>
+            </div>
+            <a href="{% url 'academic:super_admin_dashboard' %}" class="px-5 py-2.5 rounded-full bg-white/15 text-white font-semibold hover:bg-white/25 transition">ড্যাশবোর্ডে ফিরে যান</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="xl:col-span-1 bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <h2 class="font-display text-2xl text-brand-deep mb-4">
+                {% if edit_notice %}নোটিশ আপডেট করুন{% else %}নতুন নোটিশ দিন{% endif %}
+            </h2>
+
+            <form method="post" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                {% if edit_notice %}
+                <input type="hidden" name="notice_id" value="{{ edit_notice.id }}">
+                {% endif %}
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">শিরোনাম</label>
+                    <input type="text" name="title" required value="{% if edit_notice %}{{ edit_notice.title }}{% endif %}" class="w-full rounded-xl border border-emerald-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-mint">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">বিবরণ</label>
+                    <textarea name="description" rows="5" required class="w-full rounded-xl border border-emerald-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-mint">{% if edit_notice %}{{ edit_notice.description }}{% endif %}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">ফাইল/ছবি (ঐচ্ছিক)</label>
+                    <input type="file" name="document" class="w-full rounded-xl border border-emerald-200 px-3 py-2 bg-white">
+                    {% if edit_notice and edit_notice.document %}
+                    <a href="{{ edit_notice.document.url }}" target="_blank" class="text-sm text-brand-sea underline mt-2 inline-block">বর্তমান ফাইল দেখুন</a>
+                    <label class="flex items-center gap-2 mt-2 text-sm text-slate-700">
+                        <input type="checkbox" name="remove_document" class="rounded border-emerald-300">
+                        বর্তমান ফাইল মুছে দিন
+                    </label>
+                    {% endif %}
+                </div>
+
+                <label class="flex items-center gap-2 text-sm text-slate-700">
+                    <input type="checkbox" name="is_active" class="rounded border-emerald-300" {% if edit_notice %}{% if edit_notice.is_active %}checked{% endif %}{% else %}checked{% endif %}>
+                    ওয়েবসাইটে সক্রিয় দেখান
+                </label>
+
+                <div class="flex flex-wrap gap-2 pt-2">
+                    <button type="submit" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint font-semibold">
+                        {% if edit_notice %}আপডেট করুন{% else %}সেভ করুন{% endif %}
+                    </button>
+                    {% if edit_notice %}
+                    <a href="{% url 'academic:super_admin_notice_board' %}" class="px-4 py-2 rounded-full border border-emerald-300 text-brand-deep hover:bg-emerald-50">নতুন ফর্ম</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <div class="xl:col-span-2 bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm overflow-x-auto">
+            <h2 class="font-display text-2xl text-brand-deep mb-4">নোটিশ তালিকা</h2>
+            <table class="w-full min-w-[760px] text-sm">
+                <thead>
+                    <tr class="text-left text-slate-500 border-b border-emerald-100">
+                        <th class="py-2 pr-2">শিরোনাম</th>
+                        <th class="py-2 pr-2">স্ট্যাটাস</th>
+                        <th class="py-2 pr-2">তারিখ</th>
+                        <th class="py-2 pr-2">ফাইল</th>
+                        <th class="py-2">অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notice in notices %}
+                    <tr class="border-b border-emerald-50">
+                        <td class="py-3 pr-2 font-semibold text-slate-800">{{ notice.title }}</td>
+                        <td class="py-3 pr-2">
+                            {% if notice.is_active %}
+                            <span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">সক্রিয়</span>
+                            {% else %}
+                            <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-600">নিষ্ক্রিয়</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 pr-2 text-slate-600">{{ notice.created_at|date:'Y-m-d H:i' }}</td>
+                        <td class="py-3 pr-2">
+                            {% if notice.document %}
+                            <a href="{{ notice.document.url }}" target="_blank" class="text-brand-sea underline">দেখুন</a>
+                            {% else %}
+                            <span class="text-slate-400">নেই</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3">
+                            <div class="flex flex-wrap gap-2">
+                                <a href="{% url 'academic:super_admin_notice_board' %}?edit={{ notice.id }}" class="px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200">এডিট</a>
+                                <form method="post" action="{% url 'academic:super_admin_notice_toggle' notice.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="px-3 py-1.5 rounded-full bg-sky-100 text-sky-800 hover:bg-sky-200">
+                                        {% if notice.is_active %}নিষ্ক্রিয়{% else %}সক্রিয়{% endif %}
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'academic:super_admin_notice_delete' notice.id %}" onsubmit="return confirm('নোটিশ মুছে ফেলতে চান?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="px-3 py-1.5 rounded-full bg-rose-100 text-rose-700 hover:bg-rose-200">মুছুন</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-slate-500">এখনও কোনো নোটিশ নেই।</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

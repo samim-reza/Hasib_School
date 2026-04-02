@@ -14,7 +14,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
             <p class="text-sm text-slate-500">শিক্ষক</p>
             <p class="text-3xl font-bold text-brand-deep mt-1">{{ teachers_count }}</p>
@@ -31,10 +31,31 @@
             <p class="text-sm text-slate-500">উপস্থিতি রেকর্ড</p>
             <p class="text-3xl font-bold text-brand-deep mt-1">{{ attendance_count }}</p>
         </div>
+        <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm text-slate-500">নোটিশ</p>
+            <p class="text-3xl font-bold text-brand-deep mt-1">{{ notices_count }}</p>
+            <p class="text-xs text-emerald-700 mt-1">সক্রিয়: {{ active_notices_count }}</p>
+        </div>
+        <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm text-slate-500">ভর্তি বিজ্ঞাপন</p>
+            <p class="text-3xl font-bold text-brand-deep mt-1">{{ admission_headlines_count }}</p>
+            <p class="text-xs text-emerald-700 mt-1">সক্রিয়: {{ active_admission_headlines_count }}</p>
+        </div>
+        <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+            <p class="text-sm text-slate-500">ফাইন্যান্স এন্ট্রি</p>
+            <p class="text-3xl font-bold text-brand-deep mt-1">{{ transactions_count }}</p>
+        </div>
     </div>
 
     <div class="bg-white/90 border border-emerald-100 rounded-2xl p-5 shadow-sm">
-        <h2 class="font-display text-2xl text-brand-deep mb-4">দ্রুত লিংক</h2>
+        <h2 class="font-display text-2xl text-brand-deep mb-4">সুপার অ্যাডমিন কন্ট্রোল</h2>
+        <div class="flex flex-wrap gap-2 mb-4">
+            <a href="{% url 'academic:super_admin_notice_board' %}" class="px-4 py-2 rounded-full bg-brand-deep text-white hover:bg-brand-sea">নোটিশ বোর্ড ম্যানেজ</a>
+            <a href="{% url 'academic:super_admin_admission_ads' %}" class="px-4 py-2 rounded-full bg-brand-deep text-white hover:bg-brand-sea">ভর্তি বিজ্ঞাপন ম্যানেজ</a>
+            <a href="{% url 'academic:super_admin_finance_management' %}" class="px-4 py-2 rounded-full bg-brand-deep text-white hover:bg-brand-sea">ফাইন্যান্স ম্যানেজ</a>
+        </div>
+
+        <h2 class="font-display text-2xl text-brand-deep mb-4">অপারেশনাল দ্রুত লিংক</h2>
         <div class="flex flex-wrap gap-2">
             <a href="{% url 'academic:teacher_portal' %}" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint">শিক্ষক পোর্টাল</a>
             <a href="{% url 'academic:teacher_management' %}" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint">শিক্ষক ব্যবস্থাপনা</a>
