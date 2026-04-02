@@ -1,0 +1,65 @@
+{% extends 'academic/base.html' %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto">
+    <div class="rounded-3xl bg-gradient-to-r from-brand-deep via-brand-sea to-brand-mint text-white p-6 md:p-8 shadow-xl mb-6">
+        <h1 class="font-display text-3xl">{% if admission %}ভর্তি ফরম সম্পাদনা{% else %}নতুন ভর্তি ফরম{% endif %}</h1>
+        <p class="text-emerald-100 mt-2">তথ্য পূরণের পর প্রিন্ট পেজে গিয়ে PDF/প্রিন্ট করতে পারবেন</p>
+    </div>
+
+    <form method="POST" class="bg-white rounded-2xl shadow-xl border border-emerald-100 p-5 md:p-7 space-y-5">
+        {% csrf_token %}
+        <div class="grid md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-700">শিক্ষার্থীর নাম *</label>
+                <input type="text" name="name" value="{% if admission %}{{ admission.student.name }}{% endif %}" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700">রোল নম্বর *</label>
+                <input type="text" name="roll_no" value="{% if admission %}{{ admission.student.roll_no }}{% endif %}" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700">অভিভাবকের মোবাইল *</label>
+                <input type="text" name="guardian_phone" value="{% if admission %}{{ admission.student.guardian_phone }}{% endif %}" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700">অভিভাবকের নাম *</label>
+                <input type="text" name="guardian_name" value="{% if admission %}{{ admission.guardian_name }}{% endif %}" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700">শ্রেণী *</label>
+                <select name="section" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400 bg-white">
+                    <option value="">শ্রেণী নির্বাচন করুন</option>
+                    {% for value, label in section_choices %}
+                    <option value="{{ value }}" {% if admission and admission.section == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700">ভর্তি ফি (টাকা) *</label>
+                <input type="number" step="0.01" min="0" name="admission_fee" value="{% if admission %}{{ admission.admission_fee }}{% endif %}" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+                <p class="text-xs text-slate-500 mt-1">পেমেন্ট মোড: ক্যাশ</p>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-700">শিক্ষকের স্বাক্ষর (নাম) *</label>
+                <input type="text" name="admitted_by_signature" value="{% if admission %}{{ admission.admitted_by_signature }}{% else %}{{ default_signature }}{% endif %}" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-700">ঠিকানা</label>
+                <textarea name="address" rows="3" class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">{% if admission %}{{ admission.address }}{% endif %}</textarea>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-700">মন্তব্য</label>
+                <textarea name="remarks" rows="3" class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">{% if admission %}{{ admission.remarks }}{% endif %}</textarea>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3 justify-end pt-2">
+            <a href="{% url 'academic:admission_portal' %}" class="px-5 py-2.5 rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50">তালিকায় ফিরে যান</a>
+            <button type="submit" class="px-6 py-2.5 rounded-full bg-brand-sea text-white font-semibold hover:bg-brand-mint">
+                {% if admission %}আপডেট করুন{% else %}সংরক্ষণ করুন{% endif %}
+            </button>
+        </div>
+    </form>
+</section>
+{% endblock %}

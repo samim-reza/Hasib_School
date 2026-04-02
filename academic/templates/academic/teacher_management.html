@@ -1,0 +1,90 @@
+{% extends 'academic/base.html' %}
+
+{% block title %}শিক্ষক ব্যবস্থাপনা{% endblock %}
+
+{% block content %}
+<section class="space-y-6">
+    <div class="rounded-3xl bg-gradient-to-r from-brand-deep via-brand-sea to-brand-mint text-white p-6 md:p-8 shadow-xl">
+        <h1 class="font-display text-3xl md:text-4xl">শিক্ষক ব্যবস্থাপনা</h1>
+        <p class="text-emerald-100 mt-2">শুধুমাত্র অ্যাডমিন শিক্ষক তৈরি/নাম আপডেট/মুছে ফেলতে পারবেন।</p>
+    </div>
+
+    <section class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-emerald-100 p-5">
+        <h2 class="font-display text-xl text-brand-deep mb-4">নতুন শিক্ষক যুক্ত করুন</h2>
+        <form method="post" class="grid md:grid-cols-2 gap-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ইউজারনেম *</label>
+                <input type="text" name="username" required class="w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+                <p class="text-xs text-slate-500 mt-1">এই ইউজারনেম ইউনিক হবে এবং শিক্ষক এই ইউজারনেম দিয়েই লগইন করবেন।</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">নাম *</label>
+                <input type="text" name="name" required class="w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">মোবাইল *</label>
+                <input type="text" name="phone" required class="w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">বিষয় *</label>
+                <input type="text" name="subject" required class="w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <div class="md:col-span-2 flex justify-end">
+                <button type="submit" class="px-6 py-2.5 rounded-full bg-brand-sea text-white font-semibold hover:bg-brand-mint">শিক্ষক তৈরি করুন (ডিফল্ট পাসওয়ার্ড: default123)</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-emerald-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-emerald-100">
+            <h2 class="font-display text-xl text-brand-deep">শিক্ষক তালিকা</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gradient-to-r from-emerald-50 to-brand-sky text-slate-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">ইউজারনেম</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">নাম</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">মোবাইল</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">বিষয়</th>
+                        <th class="px-6 py-3 text-right font-semibold uppercase tracking-wide">অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-emerald-100 bg-white">
+                    {% for teacher in teachers %}
+                    <tr class="hover:bg-emerald-50/50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <form method="post" action="{% url 'academic:teacher_update_username' teacher.id %}" class="flex items-center gap-2">
+                                {% csrf_token %}
+                                <input type="text" name="username" value="{{ teacher.user.username }}" required class="border border-emerald-200 rounded-lg px-2 py-1.5 text-sm">
+                                <button type="submit" class="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs">ইউজারনেম আপডেট</button>
+                            </form>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <form method="post" action="{% url 'academic:teacher_update_name' teacher.id %}" class="flex items-center gap-2">
+                                {% csrf_token %}
+                                <input type="text" name="name" value="{{ teacher.name }}" required class="border border-emerald-200 rounded-lg px-2 py-1.5 text-sm">
+                                <button type="submit" class="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs">নাম আপডেট</button>
+                            </form>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ teacher.phone }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ teacher.subject }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <form method="post" action="{% url 'academic:teacher_remove' teacher.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('আপনি কি শিক্ষককে মুছে ফেলতে চান?');" class="px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs">মুছে ফেলুন</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-10 text-center text-slate-500">কোনো শিক্ষক পাওয়া যায়নি।</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>
+{% endblock %}

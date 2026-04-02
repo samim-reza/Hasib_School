@@ -1,0 +1,53 @@
+{% extends 'academic/base.html' %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto space-y-4">
+    <div class="flex items-center justify-between no-print">
+        <h1 class="font-display text-3xl text-brand-deep">ভর্তি ফরম (প্রিন্ট কপি)</h1>
+        <div class="flex gap-2">
+            <a href="{% url 'academic:admission_edit' admission.id %}" class="px-4 py-2 rounded-full border border-slate-300 hover:bg-slate-50">এডিট</a>
+            <button onclick="window.print()" class="px-4 py-2 rounded-full bg-brand-sea text-white hover:bg-brand-mint">প্রিন্ট / PDF</button>
+        </div>
+    </div>
+
+    <div class="bg-white border border-emerald-100 rounded-2xl shadow-lg p-6 md:p-8 print:shadow-none print:border-slate-300" id="printArea">
+        <div class="text-center border-b border-dashed border-slate-300 pb-4 mb-6">
+            <h2 class="font-display text-3xl text-brand-deep">হাসিব ইন্টারন্যাশনাল ইসলামিক একাডেমি</h2>
+            <p class="text-slate-600">ভর্তি আবেদন ও ফি গ্রহণ ফরম</p>
+            <p class="text-xs text-slate-500 mt-1">তারিখ: {{ admission.created_at|date:"d M Y" }}</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="p-3 rounded-lg bg-emerald-50"><span class="text-slate-500">শিক্ষার্থীর নাম:</span> <strong>{{ admission.student.name }}</strong></div>
+            <div class="p-3 rounded-lg bg-emerald-50"><span class="text-slate-500">রোল নম্বর:</span> <strong>{{ admission.student.roll_no }}</strong></div>
+            <div class="p-3 rounded-lg bg-emerald-50"><span class="text-slate-500">শ্রেণী:</span> <strong>{{ admission.student.class_name }}</strong></div>
+            <div class="p-3 rounded-lg bg-emerald-50"><span class="text-slate-500">অভিভাবকের নাম:</span> <strong>{{ admission.guardian_name }}</strong></div>
+            <div class="p-3 rounded-lg bg-emerald-50"><span class="text-slate-500">অভিভাবকের মোবাইল:</span> <strong>{{ admission.student.guardian_phone }}</strong></div>
+            <div class="p-3 rounded-lg bg-emerald-50"><span class="text-slate-500">ভর্তি ফি (ক্যাশ):</span> <strong>৳{{ admission.admission_fee }}</strong></div>
+            <div class="md:col-span-2 p-3 rounded-lg bg-emerald-50"><span class="text-slate-500">ঠিকানা:</span> <strong>{{ admission.address|default:'-' }}</strong></div>
+            <div class="md:col-span-2 p-3 rounded-lg bg-emerald-50"><span class="text-slate-500">মন্তব্য:</span> <strong>{{ admission.remarks|default:'-' }}</strong></div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 mt-12 text-center">
+            <div>
+                <div class="border-t border-slate-400 pt-2">{{ admission.admitted_by_signature }}</div>
+                <p class="text-xs text-slate-500 mt-1">শিক্ষকের স্বাক্ষর (নাম)</p>
+            </div>
+            <div>
+                <div class="border-t border-slate-400 pt-2">&nbsp;</div>
+                <p class="text-xs text-slate-500 mt-1">শিক্ষার্থী/অভিভাবকের স্বাক্ষর</p>
+            </div>
+        </div>
+
+        <p class="text-xs text-slate-500 mt-8">নোট: এই পেজ থেকে ব্রাউজারের Print অপশন ব্যবহার করে PDF হিসেবে Save করা যাবে।</p>
+    </div>
+</section>
+
+<style>
+    @media print {
+        nav, footer, .no-print { display: none !important; }
+        body { background: white !important; }
+        main { max-width: 100% !important; padding: 0 !important; }
+    }
+</style>
+{% endblock %}

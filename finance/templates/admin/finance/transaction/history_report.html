@@ -1,0 +1,71 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Financial History Report</h1>
+
+    <form method="get" style="margin-bottom: 20px; display: flex; gap: 12px; align-items: end; flex-wrap: wrap;">
+        <div>
+            <label for="start_date"><strong>Start Date</strong></label><br>
+            <input type="date" id="start_date" name="start_date" value="{% if start_date %}{{ start_date|date:'Y-m-d' }}{% endif %}">
+        </div>
+        <div>
+            <label for="end_date"><strong>End Date</strong></label><br>
+            <input type="date" id="end_date" name="end_date" value="{% if end_date %}{{ end_date|date:'Y-m-d' }}{% endif %}">
+        </div>
+        <div>
+            <button type="submit" class="button default">Filter</button>
+        </div>
+        <div>
+            <button type="submit" name="export" value="pdf" class="button">Download PDF</button>
+        </div>
+        <div>
+            <button type="button" class="button" onclick="window.print()">Print</button>
+        </div>
+        <div>
+            <a href="{% url 'admin:finance_transaction_history_report' %}" class="button">Clear</a>
+        </div>
+    </form>
+
+    <div style="background: #f8fafc; border: 1px solid #dbe3ea; border-radius: 6px; padding: 14px; margin-bottom: 18px;">
+        <p><strong>Total Transactions:</strong> {{ summary.count }}</p>
+        <p><strong>Total Income:</strong> BDT {{ summary.income }}</p>
+        <p><strong>Total Expense:</strong> BDT {{ summary.expense }}</p>
+        <p><strong>Balance:</strong> BDT {{ summary.balance }}</p>
+    </div>
+
+    <table id="result_list" class="table table-striped" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="padding: 8px; border-bottom: 1px solid #e1e8ee; text-align: left;">Date</th>
+                <th style="padding: 8px; border-bottom: 1px solid #e1e8ee; text-align: left;">Type</th>
+                <th style="padding: 8px; border-bottom: 1px solid #e1e8ee; text-align: left;">Title</th>
+                <th style="padding: 8px; border-bottom: 1px solid #e1e8ee; text-align: left;">Description</th>
+                <th style="padding: 8px; border-bottom: 1px solid #e1e8ee; text-align: right;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in transactions %}
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #f0f4f8;">{{ tx.date }}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #f0f4f8;">{{ tx.get_transaction_type_display }}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #f0f4f8;">{{ tx.title }}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #f0f4f8;">{{ tx.description|default:'-' }}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #f0f4f8; text-align: right;">BDT {{ tx.amount }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="padding: 12px; text-align: center;">No transactions found in selected date range.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+@media print {
+    #header, #nav-sidebar, .breadcrumbs, .button, form { display: none !important; }
+    #content { margin: 0 !important; }
+}
+</style>
+{% endblock %}

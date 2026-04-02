@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}হাসিব ইন্টারন্যাশনাল ইসলামিক একাডেমি{% endblock %}</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            deep: '#0f3d32',
+                            sea: '#165a4a',
+                            mint: '#2f8f73',
+                            sand: '#f2e7cc',
+                            sky: '#edf7f3'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        :root {
+            --brand-deep: #0f3d32;
+            --brand-sea: #165a4a;
+            --brand-mint: #2f8f73;
+            --brand-sand: #f2e7cc;
+            --brand-sky: #edf7f3;
+        }
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background: radial-gradient(circle at 10% 5%, #f7fcfa 0%, #eef8f4 45%, #e9f4ee 100%);
+        }
+        .font-display {
+            font-family: 'Noto Serif Bengali', serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(6px);
+        }
+        .fade-up {
+            animation: fadeUp 0.8s ease-out both;
+        }
+        .fade-up-delay {
+            animation: fadeUp 1s ease-out both;
+        }
+        .pulse-soft {
+            animation: pulseSoft 3s ease-in-out infinite;
+        }
+        .headline-scroll {
+            overflow: hidden;
+            position: relative;
+        }
+        .headline-track {
+            display: inline-block;
+            min-width: 200%;
+            animation: marquee 22s linear infinite;
+        }
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(16px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulseSoft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased" x-data="{ mobileMenu: false }">
+    <div class="fixed inset-0 -z-10 opacity-30" style="background-image: linear-gradient(115deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(245deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 28px 28px;"></div>
+
+    <nav class="sticky top-0 z-40 bg-brand-deep/95 backdrop-blur-md text-white shadow-lg border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="{% url 'academic:home' %}" class="flex items-center gap-3 group">
+                    <img class="h-11 w-11 rounded-full ring-2 ring-brand-sand/70" src="{% static 'images/logo.png' %}" alt="লোগো">
+                    <div>
+                        <p class="font-display text-lg md:text-xl leading-tight">হাসিব ইন্টারন্যাশনাল ইসলামিক একাডেমি</p>
+                        <p class="text-xs text-brand-sand">জ্ঞান, নৈতিকতা ও নেতৃত্ব</p>
+                    </div>
+                </a>
+
+                <div class="hidden md:flex items-center gap-2 text-sm">
+                    <a href="{% url 'academic:home' %}" class="px-4 py-2 rounded-full hover:bg-white/10 transition">হোম</a>
+                    <a href="{% url 'academic:admission_portal' %}" class="px-4 py-2 rounded-full hover:bg-white/10 transition">ভর্তি পোর্টাল</a>
+                    <a href="{% url 'academic:teacher_portal' %}" class="px-4 py-2 rounded-full hover:bg-white/10 transition">শিক্ষক পোর্টাল</a>
+                    <a href="{% url 'admin:index' %}" class="px-4 py-2 rounded-full bg-brand-mint hover:bg-emerald-500 transition font-semibold">অ্যাডমিন</a>
+                </div>
+
+                <button @click="mobileMenu = !mobileMenu" class="md:hidden px-3 py-2 rounded-md border border-white/30" aria-label="মেনু">
+                    মেনু
+                </button>
+            </div>
+        </div>
+        <div x-show="mobileMenu" x-transition class="md:hidden px-4 pb-4 space-y-2" style="display: none;">
+            <a href="{% url 'academic:home' %}" class="block px-3 py-2 rounded-md bg-white/10">হোম</a>
+            <a href="{% url 'academic:admission_portal' %}" class="block px-3 py-2 rounded-md bg-white/10">ভর্তি পোর্টাল</a>
+            <a href="{% url 'academic:teacher_portal' %}" class="block px-3 py-2 rounded-md bg-white/10">শিক্ষক পোর্টাল</a>
+            <a href="{% url 'admin:index' %}" class="block px-3 py-2 rounded-md bg-brand-mint">অ্যাডমিন</a>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+        {% if messages %}
+            <div class="mb-6 fade-up">
+                {% for message in messages %}
+                <div class="p-4 rounded-xl border mb-2 shadow-sm {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% else %}bg-emerald-50 text-emerald-700 border-emerald-200{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="mt-10 bg-gradient-to-r from-brand-deep via-brand-sea to-brand-deep text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-display text-xl mb-3">হাসিব ইন্টারন্যাশনাল ইসলামিক একাডেমি</h3>
+                    <p class="text-sm text-emerald-100 leading-relaxed">
+                        আধুনিক শিক্ষার সাথে ইসলামী আদর্শের সমন্বয়ে একটি সুন্দর, নিরাপদ ও মূল্যবোধভিত্তিক শিক্ষাঙ্গন।
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-brand-sand mb-3">অবস্থান</h4>
+                    <p class="text-sm text-emerald-100">
+                        মদিনা রোড, দক্ষিণ ক্যাম্পাস, 
+                        কুমিল্লা, বাংলাদেশ
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-brand-sand mb-3">যোগাযোগ</h4>
+                    <p class="text-sm text-emerald-100">মোবাইল: +880 1712-345678</p>
+                    <p class="text-sm text-emerald-100">অফিস: +880 231-123456</p>
+                    <p class="text-sm text-emerald-100">ইমেইল: info@hasibacademy.edu.bd</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-brand-sand mb-3">অফিস সময়</h4>
+                    <p class="text-sm text-emerald-100">রবি - বৃহস্পতি: সকাল ৮:০০ - বিকাল ৪:০০</p>
+                    <p class="text-sm text-emerald-100">শুক্র: বন্ধ</p>
+                    <p class="text-sm text-emerald-100">শনি: সকাল ৯:০০ - দুপুর ১:০০</p>
+                </div>
+            </div>
+            <div class="mt-8 pt-5 border-t border-white/20 text-center text-sm text-emerald-100">
+                &copy; {% now "Y" %} হাসিব ইন্টারন্যাশনাল ইসলামিক একাডেমি। সর্বস্বত্ব সংরক্ষিত।
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

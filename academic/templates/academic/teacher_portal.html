@@ -1,0 +1,194 @@
+{% extends 'academic/base.html' %}
+
+{% block content %}
+<div class="space-y-7" x-data="{ openAddStudent: false }">
+    <section class="rounded-3xl bg-gradient-to-r from-brand-deep via-brand-sea to-brand-mint text-white p-6 md:p-8 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="font-display text-3xl md:text-4xl">শিক্ষক পোর্টাল</h1>
+                <p class="text-emerald-100 mt-2">শিক্ষার্থী ব্যবস্থাপনা, উপস্থিতি গ্রহণ ও একাডেমিক আপডেট</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="{% url 'academic:admin_account_settings' %}" class="px-5 py-3 rounded-full bg-white/15 text-white font-semibold hover:bg-white/25 transition shadow-lg">
+                    ইউজারনেম সেটিংস
+                </a>
+                <a href="{% url 'academic:teacher_change_password' %}" class="px-5 py-3 rounded-full bg-white/15 text-white font-semibold hover:bg-white/25 transition shadow-lg">
+                    পাসওয়ার্ড পরিবর্তন
+                </a>
+                <a href="{% url 'academic:attendance_history' %}" class="px-5 py-3 rounded-full bg-white/15 text-white font-semibold hover:bg-white/25 transition shadow-lg">
+                    উপস্থিতি ইতিহাস
+                </a>
+                <a href="{% url 'academic:admission_portal' %}" class="px-5 py-3 rounded-full bg-white/15 text-white font-semibold hover:bg-white/25 transition shadow-lg">
+                    ভর্তি পোর্টাল
+                </a>
+                <button @click="openAddStudent = true" class="px-5 py-3 rounded-full bg-brand-sand text-brand-deep font-semibold hover:bg-amber-200 transition shadow-lg">
+                    নতুন শিক্ষার্থী যুক্ত করুন
+                </button>
+            </div>
+        </div>
+
+        {% if is_admin %}
+        <div class="mt-4 flex flex-wrap gap-2">
+            <a href="{% url 'academic:teacher_management' %}" class="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold hover:bg-white/25">শিক্ষক ব্যবস্থাপনা</a>
+            <a href="{% url 'academic:admin_account_settings' %}" class="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold hover:bg-white/25">অ্যাডমিন অ্যাকাউন্ট</a>
+            <a href="/admin/core/notice/" class="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold hover:bg-white/25">নোটিশ ম্যানেজ</a>
+            <a href="/admin/finance/transaction/" class="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold hover:bg-white/25">ফাইন্যান্স ম্যানেজ</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-emerald-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-emerald-100 bg-emerald-50/60">
+            <form method="get" class="flex flex-col md:flex-row md:items-end gap-3">
+                <div class="w-full md:w-72">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">শ্রেণী নির্বাচন করুন</label>
+                    <select name="class_name" required class="w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400 bg-white">
+                        <option value="">শ্রেণী নির্বাচন করুন</option>
+                        {% for class_name in class_names %}
+                        <option value="{{ class_name }}" {% if selected_class == class_name %}selected{% endif %}>{{ class_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="px-5 py-2.5 rounded-full bg-brand-sea text-white font-semibold hover:bg-brand-mint">শিক্ষার্থী তালিকা দেখুন</button>
+                    <a href="{% url 'academic:teacher_portal' %}" class="px-5 py-2.5 rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50">রিসেট</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="px-6 py-4 border-b border-emerald-100 flex items-center justify-between">
+            <h2 class="font-display text-2xl text-brand-deep">শিক্ষার্থী তালিকা ও উপস্থিতি {% if selected_class %}({{ selected_class }}){% endif %}</h2>
+            <span class="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">আজকের ট্র্যাকিং</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gradient-to-r from-emerald-50 to-brand-sky text-slate-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">রোল নম্বর</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">নাম</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">শ্রেণী</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">উপস্থিতি (আজ)</th>
+                        <th class="px-6 py-3 text-right font-semibold uppercase tracking-wide">অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-emerald-100 bg-white">
+                    {% for student in page_obj %}
+                        <tr id="student-row-{{ student.id }}" class="hover:bg-emerald-50/50 transition">
+                            {% include 'academic/partials/attendance_row.html' with selected_class=selected_class %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="py-10 text-center text-slate-500">
+                                {% if selected_class %}এই শ্রেণীতে কোনো শিক্ষার্থী পাওয়া যায়নি{% else %}প্রথমে শ্রেণী নির্বাচন করুন{% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if selected_class %}
+        <div class="px-6 py-4 flex items-center justify-between border-t bg-emerald-50/60">
+            {% if page_obj.has_previous %}
+                <a href="?class_name={{ selected_class }}&page={{ page_obj.previous_page_number }}" class="px-4 py-2 text-sm rounded-full border border-emerald-200 bg-white hover:bg-emerald-100">পূর্ববর্তী</a>
+            {% else %}
+                <span class="px-4 py-2 text-sm rounded-full border border-slate-200 text-slate-400 bg-white">পূর্ববর্তী</span>
+            {% endif %}
+
+            <span class="font-semibold text-sm text-brand-sea">পৃষ্ঠা {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?class_name={{ selected_class }}&page={{ page_obj.next_page_number }}" class="px-4 py-2 text-sm rounded-full border border-emerald-200 bg-white hover:bg-emerald-100">পরবর্তী</a>
+            {% else %}
+                <span class="px-4 py-2 text-sm rounded-full border border-slate-200 text-slate-400 bg-white">পরবর্তী</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-emerald-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-emerald-100 flex items-center justify-between">
+            <h2 class="font-display text-2xl text-brand-deep">আমার কার্যক্রম ইতিহাস</h2>
+            <span class="text-xs px-3 py-1 rounded-full bg-brand-sky text-brand-sea">সর্বশেষ ২০টি</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gradient-to-r from-emerald-50 to-brand-sky text-slate-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">সময়</th>
+                        {% if is_admin %}<th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">ব্যবহারকারী</th>{% endif %}
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">কার্যক্রম</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">শিক্ষার্থী</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">শ্রেণী</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">বিস্তারিত</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-emerald-100 bg-white">
+                    {% for log in recent_activities %}
+                    <tr class="hover:bg-emerald-50/50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ log.created_at|date:"d M Y, h:i A" }}</td>
+                        {% if is_admin %}<td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ log.actor.username|default:"-" }}</td>{% endif %}
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ log.get_action_type_display }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{% if log.student %}{{ log.student.name }} ({{ log.student.roll_no }}){% else %}-{% endif %}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ log.class_name|default:"-" }}</td>
+                        <td class="px-6 py-4 text-slate-700">{{ log.note|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if is_admin %}6{% else %}5{% endif %}" class="py-10 text-center text-slate-500">এখনও কোনো কার্যক্রম রেকর্ড নেই।</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div x-show="openAddStudent" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div x-transition.opacity class="fixed inset-0 bg-slate-900/60" @click="openAddStudent = false"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div x-show="openAddStudent" x-transition.scale.90 class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-emerald-100">
+                <form action="{% url 'academic:add_student' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="px-5 pt-6 pb-5 sm:px-6">
+                        <h3 class="font-display text-2xl text-brand-deep mb-4" id="modal-title">নতুন শিক্ষার্থী নিবন্ধন</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">নাম</label>
+                                <input type="text" name="name" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">রোল নম্বর</label>
+                                <input type="text" name="roll_no" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">শ্রেণী</label>
+                                <select name="class_name" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 bg-white">
+                                    <option value="">শ্রেণী নির্বাচন করুন</option>
+                                    {% for value, label in class_choices %}
+                                    <option value="{{ label }}" {% if selected_class == label %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">অভিভাবকের মোবাইল নম্বর</label>
+                                <input type="text" name="guardian_phone" required class="mt-1 w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 px-5 py-4 sm:px-6 flex justify-end gap-2 border-t border-emerald-100">
+                        <button type="button" @click="openAddStudent = false" class="py-2 px-4 bg-white border border-slate-300 rounded-full text-sm font-medium text-slate-700 hover:bg-slate-50">
+                            বাতিল
+                        </button>
+                        <button type="submit" class="py-2 px-5 rounded-full text-sm font-semibold text-white bg-brand-sea hover:bg-brand-mint">
+                            যুক্ত করুন
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

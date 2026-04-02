@@ -1,0 +1,78 @@
+{% extends 'academic/base.html' %}
+
+{% block content %}
+<section class="space-y-7">
+    <div class="rounded-3xl bg-gradient-to-r from-brand-deep via-brand-sea to-brand-mint text-white p-6 md:p-8 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="font-display text-3xl md:text-4xl">ভর্তি পোর্টাল</h1>
+                <p class="text-emerald-100 mt-2">নতুন শিক্ষার্থী ভর্তি, তথ্য সম্পাদনা এবং প্রিন্ট রসিদ</p>
+            </div>
+            <a href="{% url 'academic:admission_create' %}" class="px-5 py-3 rounded-full bg-brand-sand text-brand-deep font-semibold hover:bg-amber-200 transition shadow-lg">
+                নতুন ভর্তি ফরম
+            </a>
+        </div>
+    </div>
+
+    <section class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-emerald-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-emerald-100 flex items-center justify-between">
+            <h2 class="font-display text-2xl text-brand-deep">ভর্তি রেকর্ড তালিকা</h2>
+            <span class="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">প্যাজিনেশন সক্রিয়</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gradient-to-r from-emerald-50 to-brand-sky text-slate-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">তারিখ</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">শিক্ষার্থী</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">শ্রেণী</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">ভর্তি ফি</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">শিক্ষক স্বাক্ষর</th>
+                        <th class="px-6 py-3 text-right font-semibold uppercase tracking-wide">অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-emerald-100 bg-white">
+                    {% for admission in page_obj %}
+                    <tr class="hover:bg-emerald-50/50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-600">{{ admission.created_at|date:"d M Y" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <p class="font-semibold text-brand-sea">{{ admission.student.name }}</p>
+                            <p class="text-xs text-slate-500">রোল: {{ admission.student.roll_no }}</p>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ admission.student.class_name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">৳{{ admission.admission_fee }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ admission.admitted_by_signature }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            <a href="{% url 'academic:admission_edit' admission.id %}" class="inline-block px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100">এডিট</a>
+                            <a href="{% url 'academic:admission_print' admission.id %}" class="inline-block px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100">প্রিন্ট/PDF</a>
+                            <a href="{% url 'academic:remove_student' admission.student.id %}" onclick="return confirm('আপনি কি নিশ্চিত যে এই শিক্ষার্থীকে মুছে ফেলতে চান?');" class="inline-block px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100">মুছে ফেলুন</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-10 text-center text-slate-500">এখনও কোনো ভর্তি রেকর্ড পাওয়া যায়নি।</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-6 py-4 flex items-center justify-between border-t bg-emerald-50/60">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 text-sm rounded-full border border-emerald-200 bg-white hover:bg-emerald-100">পূর্ববর্তী</a>
+            {% else %}
+                <span class="px-4 py-2 text-sm rounded-full border border-slate-200 text-slate-400 bg-white">পূর্ববর্তী</span>
+            {% endif %}
+
+            <span class="font-semibold text-sm text-brand-sea">পৃষ্ঠা {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 text-sm rounded-full border border-emerald-200 bg-white hover:bg-emerald-100">পরবর্তী</a>
+            {% else %}
+                <span class="px-4 py-2 text-sm rounded-full border border-slate-200 text-slate-400 bg-white">পরবর্তী</span>
+            {% endif %}
+        </div>
+    </section>
+</section>
+{% endblock %}

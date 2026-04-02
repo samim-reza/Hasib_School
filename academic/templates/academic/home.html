@@ -1,0 +1,132 @@
+{% extends 'academic/base.html' %}
+{% load static %}
+{% block content %}
+<section class="space-y-10">
+    <div class="rounded-2xl overflow-hidden border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-100 shadow-md">
+        <div class="headline-scroll py-3">
+            <div class="headline-track whitespace-nowrap font-semibold text-brand-deep">
+                {% if admission_headline %}
+                    <span class="mx-8">ভর্তি চলছে: {{ admission_headline.headline }}</span>
+                    {% if admission_headline.subheadline %}<span class="mx-8">{{ admission_headline.subheadline }}</span>{% endif %}
+                    <span class="mx-8">নাযেরা বিভাগ ও হিফয বিভাগে ভর্তি চলছে</span>
+                    <span class="mx-8">ভর্তি চলছে: {{ admission_headline.headline }}</span>
+                    {% if admission_headline.subheadline %}<span class="mx-8">{{ admission_headline.subheadline }}</span>{% endif %}
+                {% else %}
+                    <span class="mx-8">ভর্তি চলছে: নাযেরা বিভাগ ও হিফয বিভাগে ভর্তি চলছে</span>
+                    <span class="mx-8">সীমিত আসনে ভর্তি কার্যক্রম চলমান</span>
+                    <span class="mx-8">ভর্তি চলছে: নাযেরা বিভাগ ও হিফয বিভাগে ভর্তি চলছে</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-6 items-stretch">
+        <div class="lg:col-span-8 relative overflow-hidden rounded-3xl min-h-[460px] shadow-2xl fade-up">
+            <img src="{% static 'images/academic_building.png' %}" alt="একাডেমিক ভবন" class="absolute inset-0 w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-emerald-900/35"></div>
+            <div class="relative z-10 p-8 md:p-12 h-full flex flex-col justify-end">
+                <p class="inline-block w-fit px-4 py-1 text-xs md:text-sm rounded-full bg-brand-sand text-brand-deep font-bold mb-4 pulse-soft">২০২৬ ভর্তি সেশন</p>
+                <h1 class="font-display text-3xl md:text-5xl leading-tight text-white mb-4">
+                    জ্ঞান, চরিত্র ও নেতৃত্বের বিশ্বস্ত শিক্ষাঙ্গন
+                </h1>
+                <p class="text-emerald-100 max-w-2xl text-lg leading-relaxed">
+                    হাসিব ইন্টারন্যাশনাল ইসলামিক একাডেমি একটি আধুনিক বিশ্ববিদ্যালয়-ধাঁচের শিক্ষা প্রতিষ্ঠান, যেখানে ইসলামী মূল্যবোধ ও সমসাময়িক দক্ষতা একসাথে গড়ে তোলা হয়।
+                </p>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-4 fade-up-delay">
+            <div class="glass-card rounded-2xl p-5 border border-emerald-100 shadow">
+                <p class="text-sm text-slate-500">শিক্ষার্থী</p>
+                <h3 class="text-3xl font-bold text-brand-sea">১২০০+</h3>
+            </div>
+            <div class="glass-card rounded-2xl p-5 border border-emerald-100 shadow">
+                <p class="text-sm text-slate-500">শিক্ষক</p>
+                <h3 class="text-3xl font-bold text-brand-sea">৭৫+</h3>
+            </div>
+            <div class="glass-card rounded-2xl p-5 border border-emerald-100 shadow col-span-2 lg:col-span-1">
+                <p class="text-sm text-slate-500">প্রোগ্রাম</p>
+                <h3 class="text-3xl font-bold text-brand-sea">১৮টি</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 fade-up">
+        <article class="bg-white rounded-2xl overflow-hidden shadow-lg border border-emerald-100">
+            <img src="{% static 'images/classroom-1.png' %}" alt="ক্লাসরুম" class="h-44 w-full object-cover">
+            <div class="p-5">
+                <h3 class="font-display text-xl text-brand-deep">স্মার্ট ক্লাসরুম</h3>
+                <p class="text-sm text-slate-600 mt-2">প্রযুক্তি-সমৃদ্ধ ক্লাসরুমে আধুনিক পাঠদান পদ্ধতি এবং শিক্ষার্থী-কেন্দ্রিক শেখার পরিবেশ।</p>
+            </div>
+        </article>
+        <article class="bg-white rounded-2xl overflow-hidden shadow-lg border border-emerald-100">
+            <img src="{% static 'images/Open_Space.png' %}" alt="খোলা ক্যাম্পাস" class="h-44 w-full object-cover">
+            <div class="p-5">
+                <h3 class="font-display text-xl text-brand-deep">উন্মুক্ত ক্যাম্পাস</h3>
+                <p class="text-sm text-slate-600 mt-2">নিরাপদ, সবুজ ও প্রশান্ত ক্যাম্পাসে শিক্ষার্থীদের মানসিক বিকাশ ও সহশিক্ষা কার্যক্রম।</p>
+            </div>
+        </article>
+        <article class="bg-white rounded-2xl overflow-hidden shadow-lg border border-emerald-100">
+            <img src="{% static 'images/Office_room.png' %}" alt="অফিস" class="h-44 w-full object-cover">
+            <div class="p-5">
+                <h3 class="font-display text-xl text-brand-deep">স্টুডেন্ট সার্ভিস</h3>
+                <p class="text-sm text-slate-600 mt-2">পরামর্শ, নথি সহায়তা ও আর্থিক নির্দেশনা সহ শিক্ষার্থী সাপোর্টের একক সেবা ডেস্ক।</p>
+            </div>
+        </article>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-6 items-stretch fade-up">
+        <div class="lg:col-span-4 bg-white rounded-2xl shadow-lg border border-emerald-100 p-6 flex flex-col">
+            <img src="{% static 'images/director.png' %}" alt="পরিচালক" class="rounded-xl h-64 object-cover mb-4">
+            <h3 class="font-display text-2xl text-brand-deep mb-2">পরিচালকের বার্তা</h3>
+            <p class="text-slate-600 text-sm leading-7">
+                “আমাদের লক্ষ্য কেবল পরীক্ষায় ভালো ফল নয়, বরং এমন প্রজন্ম গড়া যারা জ্ঞান, নৈতিকতা ও মানবিকতায় নেতৃত্ব দিতে পারবে।”
+            </p>
+        </div>
+
+        <div class="lg:col-span-8 bg-white rounded-2xl shadow-xl border border-emerald-100 p-6 md:p-8">
+            <div class="flex items-center justify-between border-b border-emerald-100 pb-4 mb-5">
+                <h2 class="font-display text-3xl text-brand-deep">নোটিশ বোর্ড</h2>
+                <span class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full">সর্বশেষ আপডেট</span>
+            </div>
+
+            {% if page_obj %}
+            <div class="space-y-4">
+                {% for notice in page_obj %}
+                <article class="rounded-xl border border-emerald-100 bg-gradient-to-r from-emerald-50/70 to-white p-4 md:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-brand-sea">{{ notice.title }}</h3>
+                        <p class="text-sm text-slate-600 mt-1 leading-6">{{ notice.description|truncatewords:28 }}</p>
+                        <p class="text-xs text-slate-500 mt-2">প্রকাশিত: {{ notice.created_at|date:"d M Y" }}</p>
+                    </div>
+                    {% if notice.document %}
+                    <a href="{{ notice.document.url }}" target="_blank" class="shrink-0 px-4 py-2 rounded-full bg-brand-sea text-white text-sm font-semibold hover:bg-brand-mint transition">
+                        ফাইল দেখুন
+                    </a>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+
+            <div class="mt-6 flex items-center justify-between gap-3">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 rounded-full border border-emerald-200 bg-white hover:bg-emerald-50">পূর্ববর্তী</a>
+                {% else %}
+                    <span class="px-4 py-2 rounded-full border border-slate-200 text-slate-400">পূর্ববর্তী</span>
+                {% endif %}
+
+                <span class="font-semibold text-sm text-brand-sea">পৃষ্ঠা {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 rounded-full border border-emerald-200 bg-white hover:bg-emerald-50">পরবর্তী</a>
+                {% else %}
+                    <span class="px-4 py-2 rounded-full border border-slate-200 text-slate-400">পরবর্তী</span>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="text-slate-500 text-center py-10">এখনও কোনো নোটিশ প্রকাশিত হয়নি।</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

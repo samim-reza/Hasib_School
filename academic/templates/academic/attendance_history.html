@@ -1,0 +1,87 @@
+{% extends 'academic/base.html' %}
+
+{% block title %}উপস্থিতি ইতিহাস{% endblock %}
+
+{% block content %}
+<section class="space-y-6">
+    <div class="rounded-3xl bg-gradient-to-r from-brand-deep via-brand-sea to-brand-mint text-white p-6 md:p-8 shadow-xl">
+        <h1 class="font-display text-3xl md:text-4xl">উপস্থিতি ইতিহাস</h1>
+        <p class="text-emerald-100 mt-2">শিক্ষক ও অ্যাডমিন শিক্ষার্থীদের পূর্বের উপস্থিতি রেকর্ড দেখতে পারবেন।</p>
+    </div>
+
+    <section class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-emerald-100 p-5">
+        <form method="get" class="grid md:grid-cols-3 gap-3">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">শ্রেণী</label>
+                <select name="class_name" class="w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400 bg-white">
+                    <option value="">সব শ্রেণী</option>
+                    {% for class_name in class_names %}
+                    <option value="{{ class_name }}" {% if selected_class == class_name %}selected{% endif %}>{{ class_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">তারিখ</label>
+                <input type="date" name="date" value="{{ selected_date }}" class="w-full border border-emerald-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+            </div>
+            <div class="flex items-end gap-2">
+                <button type="submit" class="px-5 py-2.5 rounded-full bg-brand-sea text-white font-semibold hover:bg-brand-mint">ফিল্টার</button>
+                <a href="{% url 'academic:attendance_history' %}" class="px-5 py-2.5 rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50">রিসেট</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-emerald-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gradient-to-r from-emerald-50 to-brand-sky text-slate-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">তারিখ</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">শিক্ষার্থী</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">শ্রেণী</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">স্ট্যাটাস</th>
+                        <th class="px-6 py-3 text-left font-semibold uppercase tracking-wide">নিয়েছেন</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-emerald-100 bg-white">
+                    {% for row in page_obj %}
+                    <tr class="hover:bg-emerald-50/50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ row.date|date:"d M Y" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ row.student.name }} ({{ row.student.roll_no }})</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ row.student.class_name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if row.is_present %}
+                            <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs">উপস্থিত</span>
+                            {% else %}
+                            <span class="px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs">অনুপস্থিত</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700">{{ row.taken_by.name|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-10 text-center text-slate-500">কোনো উপস্থিতি রেকর্ড পাওয়া যায়নি।</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-6 py-4 flex items-center justify-between border-t bg-emerald-50/60">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if selected_class %}&class_name={{ selected_class }}{% endif %}{% if selected_date %}&date={{ selected_date }}{% endif %}" class="px-4 py-2 text-sm rounded-full border border-emerald-200 bg-white hover:bg-emerald-100">পূর্ববর্তী</a>
+            {% else %}
+                <span class="px-4 py-2 text-sm rounded-full border border-slate-200 text-slate-400 bg-white">পূর্ববর্তী</span>
+            {% endif %}
+
+            <span class="font-semibold text-sm text-brand-sea">পৃষ্ঠা {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if selected_class %}&class_name={{ selected_class }}{% endif %}{% if selected_date %}&date={{ selected_date }}{% endif %}" class="px-4 py-2 text-sm rounded-full border border-emerald-200 bg-white hover:bg-emerald-100">পরবর্তী</a>
+            {% else %}
+                <span class="px-4 py-2 text-sm rounded-full border border-slate-200 text-slate-400 bg-white">পরবর্তী</span>
+            {% endif %}
+        </div>
+    </section>
+</section>
+{% endblock %}
